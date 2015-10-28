@@ -6,7 +6,7 @@ public class Event implements Comparable<Event>  {
 	public int time;
 	
 	public Event(int _taskId, EventType _eventType, int _time) {
-		this.taskId = _taskId;
+		this.taskId = _taskId; 
 		this.eventType = _eventType;
 		this.time = _time;
 	}
