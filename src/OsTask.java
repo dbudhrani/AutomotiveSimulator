@@ -1,11 +1,17 @@
 
 public class OsTask implements Comparable<OsTask> {
 
+	public int id;
+	
 	public Runnable runnable;
 	public OsTaskStateEnum state;
 	
 	public double wcet;
-	public double period;
+	public int period;
+	
+//	public double periodInit;
+	public double periodNext;
+	public double currentExecTime;
 	
 	public double priority;
 	
@@ -13,11 +19,15 @@ public class OsTask implements Comparable<OsTask> {
 		this.runnable = _runnable;
 	}
 
-	public OsTask(double _wcet, double _period) {
+	public OsTask(int _id, double _wcet, int _period) {
+		this.id = _id;
 		this.wcet = _wcet;
 		this.period = _period;
 		this.priority = 1/_period;
 		this.state = OsTaskStateEnum.WAITING;
+//		this.periodInit = 0;
+		this.periodNext = period;
+		this.currentExecTime = 0;
 	}
 
 	@Override
