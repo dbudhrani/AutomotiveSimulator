@@ -2,6 +2,6 @@
 public enum EventType {
 
 	TASK_FINISHED,
-	NEW_PERIOD
+	NEW_PERIOD_START
 	
 }

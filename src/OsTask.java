@@ -4,14 +4,13 @@ public class OsTask implements Comparable<OsTask> {
 	public int id;
 	
 	public Runnable runnable;
-	public OsTaskStateEnum state;
+	public OsTaskState state;
 	
-	public double wcet;
+	public int wcet;
 	public int period;
 	
 //	public double periodInit;
-	public double periodNext;
-	public double currentExecTime;
+	public int currentExecTime;
 	
 	public double priority;
 	
@@ -19,22 +18,21 @@ public class OsTask implements Comparable<OsTask> {
 		this.runnable = _runnable;
 	}
 
-	public OsTask(int _id, double _wcet, int _period) {
+	public OsTask(int _id, int _wcet, int _period) {
 		this.id = _id;
 		this.wcet = _wcet;
 		this.period = _period;
-		this.priority = 1/_period;
-		this.state = OsTaskStateEnum.WAITING;
+		this.priority = 1/((double)_period);
+		this.state = OsTaskState.WAITING;
 //		this.periodInit = 0;
-		this.periodNext = period;
 		this.currentExecTime = 0;
 	}
 
 	@Override
 	public int compareTo(OsTask _task) {
 
-		int stateInfluenceThis = this.state == OsTaskStateEnum.READY ? 1 : 0;
-		int stateInfluenceParam = _task.state == OsTaskStateEnum.READY ? 1 : 0;
+		int stateInfluenceThis = this.state == OsTaskState.READY ? 1 : 0;
+		int stateInfluenceParam = _task.state == OsTaskState.READY ? 1 : 0;
 		
 		// order by period to avoid the double issue
 		return (int) (((double) ((_task.priority * stateInfluenceParam) - (this.priority * stateInfluenceThis)))*1000);

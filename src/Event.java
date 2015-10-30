@@ -5,7 +5,7 @@ public class Event implements Comparable<Event>  {
 	public EventType eventType;
 	public int time;
 	
-	public Event(int _taskId, EventType _eventType, int _time) {
+	public Event(int _taskId, int _time, EventType _eventType) {
 		this.taskId = _taskId; 
 		this.eventType = _eventType;
 		this.time = _time;
@@ -14,7 +14,7 @@ public class Event implements Comparable<Event>  {
 	@Override
 	public int compareTo(Event _event) {
 
-		return _event.time - this.time;
+		return this.time - _event.time;
 		
 	}
 

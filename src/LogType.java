@@ -1,0 +1,9 @@
+
+public enum LogType {
+
+	TASK_STARTED,
+	TASK_FINISHED,
+	TASK_INTERRUPTED,
+	DEADLINE_MISSED
+	
+}

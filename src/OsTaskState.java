@@ -1,5 +1,5 @@
 
-public enum OsTaskStateEnum {
+public enum OsTaskState {
 
 	WAITING,
 	READY,
