@@ -129,7 +129,7 @@ public class Util {
 	public static void printLog(List<Log> log, Hashtable<String, String> data) {
 		try {
 			File logFile = new File("io/output/log.html");
-			FileWriter fw = new FileWriter(logFile, true);
+			FileWriter fw = new FileWriter(logFile, false);
 			PrintWriter pw = new PrintWriter(fw);
 			StringBuilder builder = new StringBuilder();
 			builder.append("<html><body>");
