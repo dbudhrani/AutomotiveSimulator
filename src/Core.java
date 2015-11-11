@@ -8,7 +8,7 @@ public class Core {
 	//public List<Runnable> runnables;
 	
 	//public List<OsTask> tasks;
-	public Scheduler scheduler;
+	public Scheduler2 scheduler;
 	
 	public OsTask currentTask;
 	public boolean isBusy;
@@ -17,7 +17,7 @@ public class Core {
 		this.id = _id;
 	//	this.runnables = new ArrayList<Runnable>();
 		//this.tasks = new ArrayList<OsTask>();
-		this.scheduler = new Scheduler();
+		this.scheduler = new Scheduler2();
 	}
 	
 	public void addRunnable(Runnable _runnable) {

@@ -1,5 +1,7 @@
 import java.io.File;
-import java.util.ArrayList;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.util.Hashtable;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -122,6 +124,41 @@ public class Util {
 		}
 		
 		return m;
+	}
+	
+	public static void printLog(List<Log> log, Hashtable<String, String> data) {
+		try {
+			File logFile = new File("io/output/log.html");
+			FileWriter fw = new FileWriter(logFile, true);
+			PrintWriter pw = new PrintWriter(fw);
+			StringBuilder builder = new StringBuilder();
+			builder.append("<html><body>");
+			builder.append("% time idle: " + data.get("idle") + "%");
+			builder.append("<table border=\"1\"><tr><td><b>Task ID</b></td><td><b>Time</b></td><td><b>Log type</b></td><td><b>Severity</b></td></tr>");
+			for (int i=0; i<log.size(); i++) {
+				String color = "black";
+				Log currentLog = log.get(i);
+				if (log.get(i).logSeverity == LogSeverity.CRITICAL) {
+					color = "red";
+				}
+				builder.append("<tr>");
+				builder.append(addLogCell(color, Integer.valueOf(currentLog.taskId).toString()));
+				builder.append(addLogCell(color, Integer.valueOf(currentLog.time).toString()));
+				builder.append(addLogCell(color, currentLog.logType.toString()));
+				builder.append(addLogCell(color, currentLog.logSeverity.toString()));
+				builder.append("</tr>");
+			}
+			builder.append("</table></body></html>");
+			pw.print(builder.toString());
+			pw.close();
+			fw.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static String addLogCell(String color, String text) {
+		return "<td><font color = \"" + color + "\">" + text + "</font></td>";
 	}
 	
 }

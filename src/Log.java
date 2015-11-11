@@ -10,6 +10,7 @@ public class Log {
 		this.taskId = _taskId;
 		this.logType = _logType;
 		this.time = _time;
+		this.logSeverity = _logSeverity;
 	}
 
 }

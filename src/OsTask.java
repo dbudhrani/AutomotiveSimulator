@@ -9,6 +9,8 @@ public class OsTask implements Comparable<OsTask> {
 	public int wcet;
 	public int period;
 	
+	public int nextPeriod;
+	
 //	public double periodInit;
 	public int currentExecTime;
 	

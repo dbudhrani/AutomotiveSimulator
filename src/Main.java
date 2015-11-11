@@ -13,12 +13,8 @@ public class Main {
 		core.scheduler.tasks.add(new OsTask(1, 10, 25));
 		core.scheduler.tasks.add(new OsTask(2, 10, 40));
 		
-		core.scheduler.init();
-		
-		while (true) {
-			core.scheduler.execute();	
-		}
-		
+		core.scheduler.init();		
+		core.scheduler.execute(100);	
 		
 	}
 	
