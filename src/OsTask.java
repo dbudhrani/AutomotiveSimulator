@@ -1,9 +1,10 @@
+import java.util.List;
+
 
 public class OsTask implements Comparable<OsTask> {
 
 	public int id;
 	
-	public Runnable runnable;
 	public OsTaskState state;
 	
 	public int wcet;
@@ -19,12 +20,13 @@ public class OsTask implements Comparable<OsTask> {
 	public Message message;
 	public MessageParams msgParams;
 	public Core core;
-	
-	public OsTask(Runnable _runnable) {
-		this.runnable = _runnable;
-	}
+	public List<Runnable> runnables;
 
-	public OsTask(int _id, int _wcet, int _period, MessageParams _msgParams, Core _core) {
+	public OsTask(Runnable _runnable) {
+		
+	}
+	
+	public OsTask(int _id, int _wcet, int _period, MessageParams _msgParams, Core _core, List<Runnable> _runnables) {
 		this.id = _id;
 		this.wcet = _wcet;
 		this.period = _period;
@@ -34,6 +36,7 @@ public class OsTask implements Comparable<OsTask> {
 		this.currentExecTime = 0;
 		this.msgParams = _msgParams;
 		this.core = _core;
+		this.runnables = _runnables;
 	}
 
 	@Override
@@ -47,8 +50,8 @@ public class OsTask implements Comparable<OsTask> {
 	}
 	
 	public void createMessage() {
-		this.message = new Message(id, msgParams.dst, msgParams.size, false);
-		
+		this.message = new Message(9, id, msgParams.dst, msgParams.size, false);
+		// TODO check message priority
 	}
 	
 	public Message getMessage() {

@@ -168,6 +168,7 @@ public class Scheduler2 {
 		}
 		logs.add(new Log(currentTask.id, timer, LogType.TASK_FINISHED, LogSeverity.NORMAL));
 		int nextPeriodStartOfTask = getNextPeriodStartOfTask(currentTask);
+		int delay = timer - nextPeriodStartOfTask;
 		if (timer < nextPeriodStartOfTask) {
 			setTaskToWaiting(currentTask);
 		} else if (timer == nextPeriodStartOfTask) {
@@ -256,8 +257,14 @@ public class Scheduler2 {
 		return false;
 	}
 	
-	public void taskReceivedMessage(int _taskId) {
+	public void coreReceivedMessage(Message _msg) {
 		
+	}
+	
+	public void addDelayToSWComponent(int delay) {
+		for (Runnable r : currentTask.runnables) {
+			
+		}
 	}
 	
 }

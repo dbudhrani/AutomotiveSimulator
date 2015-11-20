@@ -49,11 +49,11 @@ public class Core {
 	public void checkInputMessages(Message _msg) {
 		for (OsTask t : scheduler.tasks) {
 			if (t.id == _msg.dst) {
-				scheduler.taskReceivedMessage(t.id);
+				scheduler.coreReceivedMessage(_msg);
 				break;
 			}
 		}
 		inputMessages.remove(_msg);
 	}
-
+	
 }

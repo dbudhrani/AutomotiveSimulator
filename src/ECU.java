@@ -48,4 +48,20 @@ public class ECU {
 //		outputMessages.add(_msg);
 //	}
 	
+	public void checkInputMessage(Message _msg) {
+		for (Core c : cores) {
+			for (OsTask t : c.scheduler.tasks) {
+				if (t.id == _msg.dst) {
+					ecuReceivedMessage(_msg);
+					break;
+				}
+			}
+		}
+	}
+	
+	public void ecuReceivedMessage(Message _msg) {
+		bus.broadcastMessage(_msg);
+		inputMessages.remove(_msg);
+	}
+	
 }
