@@ -16,11 +16,15 @@ public class OsTask implements Comparable<OsTask> {
 	
 	public double priority;
 	
+	public Message message;
+	public MessageParams msgParams;
+	public Core core;
+	
 	public OsTask(Runnable _runnable) {
 		this.runnable = _runnable;
 	}
 
-	public OsTask(int _id, int _wcet, int _period) {
+	public OsTask(int _id, int _wcet, int _period, MessageParams _msgParams, Core _core) {
 		this.id = _id;
 		this.wcet = _wcet;
 		this.period = _period;
@@ -28,6 +32,8 @@ public class OsTask implements Comparable<OsTask> {
 		this.state = OsTaskState.WAITING;
 //		this.periodInit = 0;
 		this.currentExecTime = 0;
+		this.msgParams = _msgParams;
+		this.core = _core;
 	}
 
 	@Override
@@ -38,6 +44,15 @@ public class OsTask implements Comparable<OsTask> {
 		
 		// order by period to avoid the double issue
 		return (int) (((double) ((_task.priority * stateInfluenceParam) - (this.priority * stateInfluenceThis)))*1000);
+	}
+	
+	public void createMessage() {
+		this.message = new Message(id, msgParams.dst, msgParams.size, false);
+		
+	}
+	
+	public Message getMessage() {
+		return this.message;
 	}
 	
 }

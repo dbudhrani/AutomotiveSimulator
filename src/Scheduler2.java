@@ -22,13 +22,15 @@ public class Scheduler2 {
 	public int idleTimeFinish = 0;
 	
 	OsTask currentTask;
+	Core core;
 	
-	public Scheduler2() {
+	public Scheduler2(Core _core) {
 		this.tasks = new ArrayList<OsTask>();
 		this.events = new ArrayList<Event>();
 		this.logs = new ArrayList<Log>();
 		this.data = new Hashtable<String, String>();
 		this.timer = 0;
+		this.core = _core;
 	}
 
 	public void addOsTask(OsTask _osTask) {
@@ -160,6 +162,10 @@ public class Scheduler2 {
 	private void taskFinished() {
 		timer = currentTaskRunningTimeFinish;
 		currentTask.currentExecTime = currentTask.wcet;
+		currentTask.createMessage();
+		if (!isTaskSameCore(currentTask.getMessage().dst)) {
+			core.addMessageToOutputQueue(currentTask.getMessage());
+		}
 		logs.add(new Log(currentTask.id, timer, LogType.TASK_FINISHED, LogSeverity.NORMAL));
 		int nextPeriodStartOfTask = getNextPeriodStartOfTask(currentTask);
 		if (timer < nextPeriodStartOfTask) {
@@ -239,6 +245,19 @@ public class Scheduler2 {
 		data.put("idle", Double.valueOf((double) idleTime/(double) maxTime).toString());
 		Util.printLog(logs, data);
 		System.exit(-1);
+	}
+	
+	public boolean isTaskSameCore(int _id) {
+		for (OsTask t : tasks) {
+			if (t.id == _id) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public void taskReceivedMessage(int _taskId) {
+		
 	}
 	
 }

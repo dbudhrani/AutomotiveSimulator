@@ -59,7 +59,7 @@ public class Util {
 						for (int j=0; j<ecuChildren.getLength(); j++) {
 							Node componentNode = ecuChildren.item(j);
 							if (componentNode.getNodeType() == 1) {
-								Component component = new Component(componentNode.getTextContent());
+								SWComponent component = new SWComponent(componentNode.getTextContent());
 								ecu.addComponent(component);	
 							}
 						}
