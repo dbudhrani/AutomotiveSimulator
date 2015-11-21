@@ -145,8 +145,14 @@ public class Scheduler2 {
 		currentTask = task;
 		currentTask.state = OsTaskState.RUNNING;
 		logs.add(new Log(task.id, timer, LogType.TASK_EXECUTING, LogSeverity.NORMAL));
+		// TODO delete message from input queue
+		
+		// TODO be careful, this should not be executed on preemption
+		if (currentTask.currentExecTime == 0) {
+			task.computeExecTime();	
+		}
 		currentTaskRunningTimeStart = timer;
-		currentTaskRunningTimeFinish = timer + (currentTask.wcet - currentTask.currentExecTime);
+		currentTaskRunningTimeFinish = timer + (currentTask.execTime - currentTask.currentExecTime);
 	}
 	
 	private void makePreemption(OsTask candidateTask) {
@@ -161,12 +167,15 @@ public class Scheduler2 {
 	
 	private void taskFinished() {
 		timer = currentTaskRunningTimeFinish;
-		currentTask.currentExecTime = currentTask.wcet;
+		currentTask.currentExecTime = currentTask.execTime;
 		currentTask.createMessage();
 		if (!isTaskSameCore(currentTask.getMessage().dst)) {
 			core.addMessageToOutputQueue(currentTask.getMessage());
 		}
 		logs.add(new Log(currentTask.id, timer, LogType.TASK_FINISHED, LogSeverity.NORMAL));
+		for (SWComponent c : Architecture.getSWComponents()) {
+			addDelayToSWComponent(c);
+		}
 		int nextPeriodStartOfTask = getNextPeriodStartOfTask(currentTask);
 		int delay = timer - nextPeriodStartOfTask;
 		if (timer < nextPeriodStartOfTask) {
@@ -179,7 +188,7 @@ public class Scheduler2 {
 			logs.add(new Log(currentTask.id, nextPeriodStartOfTask, LogType.DEADLINE_MISSED, LogSeverity.CRITICAL));
 			data.put("idle", Double.valueOf((double) idleTime/(double) maxTime).toString());
 			Util.printLog(logs, data);
-			System.exit(-1);
+//			System.exit(-1);
 		}
 	}
 	
@@ -190,7 +199,7 @@ public class Scheduler2 {
 			if (events.get(i).time == firstTime) {
 				for (int j=0; j<tasks.size(); j++) {
 					if (tasks.get(j).id == events.get(i).taskId) {
-						if (tasks.get(j).wcet == tasks.get(j).currentExecTime) {
+						if (tasks.get(j).execTime == tasks.get(j).currentExecTime) {
 							setTaskToReady(tasks.get(j), false);	
 						} else {
 							logs.add(new Log(currentTask.id, firstTime, LogType.DEADLINE_MISSED, LogSeverity.CRITICAL));
@@ -245,7 +254,7 @@ public class Scheduler2 {
 	private void finishExecution() {
 		data.put("idle", Double.valueOf((double) idleTime/(double) maxTime).toString());
 		Util.printLog(logs, data);
-		System.exit(-1);
+//		System.exit(-1);
 	}
 	
 	public boolean isTaskSameCore(int _id) {
@@ -258,13 +267,36 @@ public class Scheduler2 {
 	}
 	
 	public void coreReceivedMessage(Message _msg) {
-		
-	}
-	
-	public void addDelayToSWComponent(int delay) {
-		for (Runnable r : currentTask.runnables) {
-			
+		if (!isTaskSameCore(_msg.dst)) {
+			core.inputMessages.remove(_msg);
 		}
 	}
+	
+	public void addDelayToSWComponent(SWComponent _component) {
+		// TODO change
+		List<Runnable> tempRunnables = new ArrayList<Runnable>();
+		for (Runnable r1 : currentTask.runnables) {
+			for (SWComponent c : Architecture.getSWComponents()) {
+				if (_component.id == c.id) {
+					for (Runnable r2 : c.runnables) {
+						if (r1.id == r2.id && !tempRunnables.contains(r1)) {
+//							c.addDelay(delay);
+							tempRunnables.add(r1);
+//							break;
+						}
+					}	
+				}
+			}
+		}
+		
+		double delay = 0;
+		for (Runnable r : tempRunnables) {
+			delay += r.getExecTime();
+		}
+		
+		_component.addDelay((getNextPeriodStartOfTask(currentTask) - currentTask.period) +  delay);
+	}
+
+	
 	
 }

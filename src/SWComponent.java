@@ -22,5 +22,5 @@ public class SWComponent {
 	public void addDelay(double _delay) {
 		this.e2eDelay += _delay;
 	}
-
+	
 }

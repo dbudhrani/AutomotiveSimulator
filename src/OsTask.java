@@ -7,7 +7,7 @@ public class OsTask implements Comparable<OsTask> {
 	
 	public OsTaskState state;
 	
-	public int wcet;
+	public int execTime;
 	public int period;
 	
 	public int nextPeriod;
@@ -26,9 +26,9 @@ public class OsTask implements Comparable<OsTask> {
 		
 	}
 	
-	public OsTask(int _id, int _wcet, int _period, MessageParams _msgParams, Core _core, List<Runnable> _runnables) {
+	public OsTask(int _id, int _period, MessageParams _msgParams, Core _core, List<Runnable> _runnables) {
 		this.id = _id;
-		this.wcet = _wcet;
+		//this.wcet = _wcet;
 		this.period = _period;
 		this.priority = 1/((double)_period);
 		this.state = OsTaskState.WAITING;
@@ -37,6 +37,7 @@ public class OsTask implements Comparable<OsTask> {
 		this.msgParams = _msgParams;
 		this.core = _core;
 		this.runnables = _runnables;
+		this.execTime = 0;
 	}
 
 	@Override
@@ -56,6 +57,13 @@ public class OsTask implements Comparable<OsTask> {
 	
 	public Message getMessage() {
 		return this.message;
+	}
+	
+	public void computeExecTime() {
+		this.execTime = 0;
+		for (Runnable r : runnables) {
+			this.execTime += r.computeExecTime();
+		}
 	}
 	
 }

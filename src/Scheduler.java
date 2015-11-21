@@ -37,7 +37,7 @@ public class Scheduler {
 		}
 		sortTasks();
 		currentTask = tasks.get(0).state == OsTaskState.READY ? tasks.get(0) : null;
-		events.add(new Event(currentTask.id, currentTask.wcet, EventType.TASK_FINISHED));
+		events.add(new Event(currentTask.id, currentTask.execTime, EventType.TASK_FINISHED));
 		sortEvents();
 	}
 	
@@ -180,7 +180,7 @@ public class Scheduler {
 	private void setTaskFinishedEvent() {
 		for (int i=0; i<events.size(); i++) {
 			if (events.get(i).eventType == EventType.TASK_FINISHED) {
-				events.get(i).time = timer + (currentTask.wcet - currentTask.currentExecTime);
+				events.get(i).time = timer + (currentTask.execTime - currentTask.currentExecTime);
 				break;
 			}
 		}
