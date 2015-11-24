@@ -14,16 +14,19 @@ public class ECU {
 	
 	public IntraECUBus bus;
 
+	public double processorSpeed;
+	
 	public ECU(int _id) {
 		this.id = _id;
 	}
 	
-	public ECU(int _id, IntraECUBus _bus) {
+	public ECU(int _id, double _processorSpeed, IntraECUBus _bus) {
 		this.id = _id;
 		this.components = new ArrayList<SWComponent>();
 		this.inputMessages = new ArrayList<Message>();
 		this.outputMessages = new ArrayList<Message>();
 		this.cores = new ArrayList<Core>();
+		this.processorSpeed = _processorSpeed;
 		this.bus = _bus;
 	}
 

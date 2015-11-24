@@ -134,6 +134,7 @@ public class Util {
 			StringBuilder builder = new StringBuilder();
 			builder.append("<html><body>");
 			builder.append("% time idle: " + data.get("idle") + "%");
+			builder.append("End to end delay: " + data.get("e2e"));
 			builder.append("<table border=\"1\"><tr><td><b>Task ID</b></td><td><b>Time</b></td><td><b>Log type</b></td><td><b>Severity</b></td></tr>");
 			for (int i=0; i<log.size(); i++) {
 				String color = "black";
@@ -143,7 +144,7 @@ public class Util {
 				}
 				builder.append("<tr>");
 				builder.append(addLogCell(color, Integer.valueOf(currentLog.taskId).toString()));
-				builder.append(addLogCell(color, Integer.valueOf(currentLog.time).toString()));
+				builder.append(addLogCell(color, Double.valueOf(currentLog.time).toString()));
 				builder.append(addLogCell(color, currentLog.logType.toString()));
 				builder.append(addLogCell(color, currentLog.logSeverity.toString()));
 				builder.append("</tr>");

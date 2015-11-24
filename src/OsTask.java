@@ -7,13 +7,13 @@ public class OsTask implements Comparable<OsTask> {
 	
 	public OsTaskState state;
 	
-	public int execTime;
+	public double execTime;
 	public int period;
 	
 	public int nextPeriod;
 	
 //	public double periodInit;
-	public int currentExecTime;
+	public double currentExecTime;
 	
 	public double priority;
 	
@@ -21,7 +21,7 @@ public class OsTask implements Comparable<OsTask> {
 	public MessageParams msgParams;
 	public Core core;
 	public List<Runnable> runnables;
-
+	
 	public OsTask(Runnable _runnable) {
 		
 	}
@@ -59,11 +59,17 @@ public class OsTask implements Comparable<OsTask> {
 		return this.message;
 	}
 	
-	public void computeExecTime() {
+	private void computeExecTime() {
 		this.execTime = 0;
 		for (Runnable r : runnables) {
 			this.execTime += r.computeExecTime();
 		}
+	}
+
+	public double computeTaskTime() {
+		computeExecTime();
+		this.execTime = (2.4*this.execTime)/this.core.ecu.processorSpeed;
+		return this.execTime;
 	}
 	
 }

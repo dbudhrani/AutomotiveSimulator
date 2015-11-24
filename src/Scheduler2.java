@@ -11,15 +11,15 @@ public class Scheduler2 {
 	public List<Log> logs;
 	public Hashtable<String, String> data;
 	
-	public int maxTime;
+	public double maxTime;
 	
-	public int timer;
-	public int currentTaskRunningTimeStart;
-	public int currentTaskRunningTimeFinish;
+	public double timer;
+	public double currentTaskRunningTimeStart;
+	public double currentTaskRunningTimeFinish;
 	
-	public int idleTime = 0;
-	public int idleTimeStart = 0;
-	public int idleTimeFinish = 0;
+	public double idleTime = 0;
+	public double idleTimeStart = 0;
+	public double idleTimeFinish = 0;
 	
 	OsTask currentTask;
 	Core core;
@@ -75,7 +75,7 @@ public class Scheduler2 {
 		}
 
 		// print log
-		finishExecution();
+		finishExecution(true);
 	}
 	
 	private int getNextPeriodStartOfTask(OsTask task) {
@@ -149,7 +149,7 @@ public class Scheduler2 {
 		
 		// TODO be careful, this should not be executed on preemption
 		if (currentTask.currentExecTime == 0) {
-			task.computeExecTime();	
+			currentTask.computeTaskTime();	
 		}
 		currentTaskRunningTimeStart = timer;
 		currentTaskRunningTimeFinish = timer + (currentTask.execTime - currentTask.currentExecTime);
@@ -177,7 +177,7 @@ public class Scheduler2 {
 			addDelayToSWComponent(c);
 		}
 		int nextPeriodStartOfTask = getNextPeriodStartOfTask(currentTask);
-		int delay = timer - nextPeriodStartOfTask;
+		double delay = timer - nextPeriodStartOfTask;
 		if (timer < nextPeriodStartOfTask) {
 			setTaskToWaiting(currentTask);
 		} else if (timer == nextPeriodStartOfTask) {
@@ -186,9 +186,9 @@ public class Scheduler2 {
 		else {
 			// Deadline missed
 			logs.add(new Log(currentTask.id, nextPeriodStartOfTask, LogType.DEADLINE_MISSED, LogSeverity.CRITICAL));
-			data.put("idle", Double.valueOf((double) idleTime/(double) maxTime).toString());
-			Util.printLog(logs, data);
-//			System.exit(-1);
+			setTaskToReady(currentTask, false);
+			runNextTask();
+			//finishExecution(false);
 		}
 	}
 	
@@ -203,7 +203,9 @@ public class Scheduler2 {
 							setTaskToReady(tasks.get(j), false);	
 						} else {
 							logs.add(new Log(currentTask.id, firstTime, LogType.DEADLINE_MISSED, LogSeverity.CRITICAL));
-							finishExecution();
+							setTaskToReady(currentTask, false);
+							runNextTask();
+							//finishExecution(false);
 						}
 						break;
 					}
@@ -251,10 +253,11 @@ public class Scheduler2 {
 		setTaskToRunning(nextTask);
 	}
 	
-	private void finishExecution() {
+	private void finishExecution(boolean _exit) {
 		data.put("idle", Double.valueOf((double) idleTime/(double) maxTime).toString());
+		data.put("e2e", Double.valueOf(Architecture.getSWComponents().get(0).e2eDelay).toString());
 		Util.printLog(logs, data);
-//		System.exit(-1);
+		System.exit(-1);
 	}
 	
 	public boolean isTaskSameCore(int _id) {
