@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -128,6 +129,7 @@ public class Util {
 	
 	public static void printLog(List<Log> log, Hashtable<String, String> data, Core core) {
 		try {
+			Collections.sort(log);
 			File logFile = new File("io/output/log_core" + core.id + ".html");
 			FileWriter fw = new FileWriter(logFile, false);
 			PrintWriter pw = new PrintWriter(fw);
@@ -137,13 +139,18 @@ public class Util {
 			builder.append("<br/>End to end delay: " + data.get("e2e0"));
 			builder.append("<br/>End to end delay: " + data.get("e2e1"));
 			builder.append("<br/>End to end delay: " + data.get("e2e2"));
-			builder.append("<br/>Bus: " + core.ecu.bus.delay);
+			builder.append("<br/>Intra ECU Bus: " + core.ecu.bus.delay);
+			builder.append("<br/>Inter ECU Bus: " + Architecture.bus.delay);
+			builder.append("<br/>Message age: " + core.scheduler.tasks.get(0).getMessage().getMessageAge());
+			
 			builder.append("<table border=\"1\"><tr><td><b>Task ID</b></td><td><b>Time</b></td><td><b>Log type</b></td><td><b>Severity</b></td></tr>");
 			for (int i=0; i<log.size(); i++) {
 				String color = "black";
 				Log currentLog = log.get(i);
 				if (log.get(i).logSeverity == LogSeverity.CRITICAL) {
 					color = "red";
+				} else if (log.get(i).logType == LogType.MESSAGE_SENT || log.get(i).logType == LogType.MESSAGE_RECEIVED) {
+					color = "blue";
 				}
 				builder.append("<tr>");
 				builder.append(addLogCell(color, Integer.valueOf(currentLog.taskId).toString()));

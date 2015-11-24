@@ -53,8 +53,8 @@ public class OsTask implements Comparable<OsTask> {
 		return (int) (((double) ((_task.priority * stateInfluenceParam) - (this.priority * stateInfluenceThis)))*1000);
 	}
 	
-	public void createMessage() {
-		this.message = new Message(9, id, msgParams.dst, msgParams.size, false);
+	public void createMessage(double _ts) {
+		this.message = new Message(9, id, msgParams.dst, msgParams.size, false, _ts);
 		// TODO check message priority
 	}
 	

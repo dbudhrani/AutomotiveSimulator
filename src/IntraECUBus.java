@@ -23,14 +23,17 @@ public class IntraECUBus {
 
 	public void broadcastMessage(Message _msg) {
 		isBusy = true;
+		selectMessage();
+		computeDelay(_msg);
+		_msg.updateTimestamp(this.delay);
 		for (Core c : cores) {
 			if (!c.scheduler.isTaskSameCore(_msg.dst)) {
+				c.scheduler.logs.add(new Log(-1, c.scheduler.timer, LogType.MESSAGE_SENT, LogSeverity.NORMAL));
 				c.inputMessages.add(_msg);
+				c.scheduler.logs.add(new Log(-1, c.scheduler.timer + this.delay, LogType.MESSAGE_RECEIVED, LogSeverity.NORMAL));
 				c.checkInputMessages(_msg);	
 			}
 		}
-		selectMessage();
-		computeDelay(_msg);
 		isBusy = false;
 	}
 	

@@ -5,8 +5,18 @@ import java.util.List;
 public class Architecture {
 
 	static Mapping m;
-	public InterECUBus bus;
+	public static InterECUBus bus;
 	private static List<SWComponent> components;
+	private static final Architecture singleton = new Architecture();
+	
+	
+	public Architecture() {
+
+	}
+	
+	public static Architecture getInstance() {
+		return singleton;
+	}
 	
 	public static void main(String[] args) {
 	
@@ -15,7 +25,18 @@ public class Architecture {
 		//m = Util.parseMappingFile("io/input/config1/resultMediumSizeAutomotiveUseCase.xml");
 	
 		IntraECUBus bus1 = new IntraECUBus(200);
-		ECU ecu = new ECU(1, 2.4, bus1);
+		bus = new InterECUBus(400);
+		
+		
+		ECU ecu = new ECU(1, 2.4, bus1, Architecture.getInstance());
+		
+		IntraECUBus bus2 = new IntraECUBus(200);
+		ECU ecu2 = new ECU(2, 2.4, bus2, Architecture.getInstance());
+		
+		
+		bus.ecus.add(ecu);
+		bus.ecus.add(ecu2);
+		
 		
 		Core core = new Core(1, ecu); 
 
@@ -100,7 +121,7 @@ public class Architecture {
 		core.scheduler.init();		
 		
 		
-		Core core2 = new Core(2, ecu); 
+		Core core2 = new Core(2, ecu2); 
 		core2.scheduler.tasks.add(new OsTask(3, 69, new MessageParams(1, 23), core2, run4));
 		core2.scheduler.tasks.add(new OsTask(4, 25, new MessageParams(1, 23), core2, run5));
 		core2.scheduler.tasks.add(new OsTask(5, 40, new MessageParams(1, 23), core2, run6));
@@ -111,12 +132,11 @@ public class Architecture {
 		bus1.cores.add(core2);
 		
 		ecu.cores.add(core);
-		ecu.cores.add(core2);
+		ecu2.cores.add(core2);
 		
 		core.scheduler.execute(100);	
 		core2.scheduler.execute(100);	
 
-		
 	}
 
 	public static List<SWComponent> getSWComponents() {

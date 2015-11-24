@@ -173,7 +173,7 @@ public class Scheduler2 {
 	private void taskFinished() {
 		timer = currentTaskRunningTimeFinish;
 		currentTask.currentExecTime = currentTask.execTime;
-		currentTask.createMessage();
+		currentTask.createMessage(timer);
 		if (!isTaskSameCore(currentTask.getMessage().dst)) {
 			core.addMessageToOutputQueue(currentTask.getMessage());
 		}

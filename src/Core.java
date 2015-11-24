@@ -40,8 +40,9 @@ public class Core {
 		if (ecu.isTaskSameECU(_msg.dst)) {
 			ecu.bus.broadcastMessage(_msg);
 		} else {
-//			ecu.addMessageToOutputQueue(_msg);
-			
+			ecu.bus.computeDelay(_msg);
+			_msg.updateTimestamp(ecu.bus.delay);
+			ecu.addMessageToOutputQueue(_msg);
 		}
 		outputMessages.remove(_msg);
 	}

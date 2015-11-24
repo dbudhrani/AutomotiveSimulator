@@ -14,13 +14,15 @@ public class ECU {
 	
 	public IntraECUBus bus;
 
+	public Architecture arc;
+	
 	public double processorSpeed;
 	
 	public ECU(int _id) {
 		this.id = _id;
 	}
 	
-	public ECU(int _id, double _processorSpeed, IntraECUBus _bus) {
+	public ECU(int _id, double _processorSpeed, IntraECUBus _bus, Architecture _arc) {
 		this.id = _id;
 		this.components = new ArrayList<SWComponent>();
 		this.inputMessages = new ArrayList<Message>();
@@ -28,6 +30,7 @@ public class ECU {
 		this.cores = new ArrayList<Core>();
 		this.processorSpeed = _processorSpeed;
 		this.bus = _bus;
+		this.arc = _arc;
 	}
 
 	public void addComponent(SWComponent _component) {
@@ -45,11 +48,10 @@ public class ECU {
 		return false;
 	}
 	
-//	public void addMessageToOutputQueue(Message _msg) {
-//		outputMessages.add(_msg);
-//		bus.broadcastMessage(_msg);
-//		outputMessages.add(_msg);
-//	}
+	public void addMessageToOutputQueue(Message _msg) {
+		outputMessages.add(_msg);
+		Architecture.bus.broadcastMessage(_msg);
+	}
 	
 	public void checkInputMessage(Message _msg) {
 		for (Core c : cores) {

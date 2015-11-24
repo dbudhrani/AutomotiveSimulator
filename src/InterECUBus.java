@@ -7,28 +7,32 @@ public class InterECUBus {
 
 	public List<ECU> ecus;
 	public int bandwith;
-	public int delay;
+	public double delay;
 	public boolean isBusy;
 	
 	public InterECUBus(int _bandwith) {
 		this.bandwith = _bandwith;
 		this.isBusy = false;
+		this.ecus = new ArrayList<ECU>();
 	}
 
-	public double computeDelay(Message _msg) {
+	public void computeDelay(Message _msg) {
 		// connect this delay with the delay of the SW component
-		return ((_msg.extendedIdentifier ? 80 : 55) + 10*_msg.size)/bandwith;
+		this.delay = ((_msg.extendedIdentifier ? 80 : 55) + 10*_msg.size)/(double)bandwith;
 	}
 
 	public void broadcastMessage(Message _msg) {
 		isBusy = true;
+		selectMessage();
+		computeDelay(_msg);
+		_msg.updateTimestamp(this.delay);
 		for (ECU e : ecus) {
-			if (!e.isTaskSameECU(_msg.dst)) {
-				e.inputMessages.add(_msg);				
+			if (!e.isTaskSameECU(_msg.src)) {
+				e.inputMessages.add(_msg);	
+				e.checkInputMessage(_msg);
 			}
 		}
 		isBusy = false;
-		selectMessage();
 	}
 	
 	public void selectMessage() {
