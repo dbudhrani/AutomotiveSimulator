@@ -126,9 +126,9 @@ public class Util {
 		return m;
 	}
 	
-	public static void printLog(List<Log> log, Hashtable<String, String> data) {
+	public static void printLog(List<Log> log, Hashtable<String, String> data, Core core) {
 		try {
-			File logFile = new File("io/output/log.html");
+			File logFile = new File("io/output/log_core" + core.id + ".html");
 			FileWriter fw = new FileWriter(logFile, false);
 			PrintWriter pw = new PrintWriter(fw);
 			StringBuilder builder = new StringBuilder();
@@ -137,6 +137,7 @@ public class Util {
 			builder.append("<br/>End to end delay: " + data.get("e2e0"));
 			builder.append("<br/>End to end delay: " + data.get("e2e1"));
 			builder.append("<br/>End to end delay: " + data.get("e2e2"));
+			builder.append("<br/>Bus: " + core.ecu.bus.delay);
 			builder.append("<table border=\"1\"><tr><td><b>Task ID</b></td><td><b>Time</b></td><td><b>Log type</b></td><td><b>Severity</b></td></tr>");
 			for (int i=0; i<log.size(); i++) {
 				String color = "black";

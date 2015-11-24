@@ -7,17 +7,18 @@ public class IntraECUBus {
 
 	public List<Core> cores;
 	public int bandwith;
-	public int delay;
+	public double delay;
 	public boolean isBusy;
 	
 	public IntraECUBus(int _bandwith) {
 		this.bandwith = _bandwith;
 		this.isBusy = false;
+		this.cores = new ArrayList<Core>();
 	}
 	
-	public double computeDelay(Message _msg) {
+	public void computeDelay(Message _msg) {
 		// connect this delay with the delay of the SW component
-		return ((_msg.extendedIdentifier ? 80 : 55) + 10*_msg.size)/bandwith;
+		this.delay = ((_msg.extendedIdentifier ? 80 : 55) + 10*_msg.size)/(double)bandwith;
 	}
 
 	public void broadcastMessage(Message _msg) {
@@ -28,8 +29,9 @@ public class IntraECUBus {
 				c.checkInputMessages(_msg);	
 			}
 		}
-		isBusy = false;
 		selectMessage();
+		computeDelay(_msg);
+		isBusy = false;
 	}
 	
 	public void selectMessage() {
