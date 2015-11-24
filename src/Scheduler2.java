@@ -283,9 +283,10 @@ public class Scheduler2 {
 	}
 	
 	public void coreReceivedMessage(Message _msg) {
-		if (!isTaskSameCore(_msg.dst)) {
-			core.inputMessages.remove(_msg);
+		if (isTaskSameCore(_msg.dst)) {
+			logs.add(new Log(_msg.dst, _msg.updTs, LogType.MESSAGE_RECEIVED, LogSeverity.NORMAL));			
 		}
+		core.inputMessages.remove(_msg);
 	}
 	
 	public void addDelayToSWComponent() {

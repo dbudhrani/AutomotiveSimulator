@@ -36,6 +36,7 @@ public class Core {
 	}
 	
 	public void addMessageToOutputQueue(Message _msg) {
+		scheduler.logs.add(new Log(_msg.src, scheduler.timer, LogType.MESSAGE_SENT, LogSeverity.NORMAL));
 		outputMessages.add(_msg);
 		if (ecu.isTaskSameECU(_msg.dst)) {
 			ecu.bus.broadcastMessage(_msg);

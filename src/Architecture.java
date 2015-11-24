@@ -129,7 +129,7 @@ public class Architecture {
 		core2.scheduler.init();		
 		
 		bus1.cores.add(core);
-		bus1.cores.add(core2);
+		bus2.cores.add(core2);
 		
 		ecu.cores.add(core);
 		ecu2.cores.add(core2);
