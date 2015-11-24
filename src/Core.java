@@ -11,7 +11,7 @@ public class Core {
 	public List<Message> outputMessages;
 	
 	//public List<OsTask> tasks;
-	public Scheduler2 scheduler;
+	public Scheduler scheduler;
 	
 	public OsTask currentTask;
 	public boolean isBusy;
@@ -25,7 +25,7 @@ public class Core {
 		this.id = _id;
 	//	this.runnables = new ArrayList<Runnable>();
 		//this.tasks = new ArrayList<OsTask>();
-		this.scheduler = new Scheduler2(this);
+		this.scheduler = new Scheduler(this);
 		this.inputMessages = new ArrayList<Message>();
 		this.outputMessages = new ArrayList<Message>();
 		this.ecu = _ecu;

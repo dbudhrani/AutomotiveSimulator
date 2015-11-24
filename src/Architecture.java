@@ -8,10 +8,10 @@ public class Architecture {
 	public static InterECUBus bus;
 	private static List<SWComponent> components;
 	private static final Architecture singleton = new Architecture();
-	
+	private static List<ECU> ecus;
 	
 	public Architecture() {
-
+		
 	}
 	
 	public static Architecture getInstance() {
@@ -21,6 +21,7 @@ public class Architecture {
 	public static void main(String[] args) {
 	
 		components = new ArrayList<SWComponent>();
+		ecus = new ArrayList<ECU>();
 		
 		//m = Util.parseMappingFile("io/input/config1/resultMediumSizeAutomotiveUseCase.xml");
 	
@@ -32,7 +33,6 @@ public class Architecture {
 		
 		IntraECUBus bus2 = new IntraECUBus(200);
 		ECU ecu2 = new ECU(2, 2.4, bus2, Architecture.getInstance());
-		
 		
 		bus.ecus.add(ecu);
 		bus.ecus.add(ecu2);
@@ -134,13 +134,22 @@ public class Architecture {
 		ecu.cores.add(core);
 		ecu2.cores.add(core2);
 		
+		ecus.add(ecu);
+		ecus.add(ecu2);
+		
 		core.scheduler.execute(100);	
 		core2.scheduler.execute(100);	
 
+		Util.printLog();
+		
 	}
 
 	public static List<SWComponent> getSWComponents() {
 		return components;
+	}
+
+	public static List<ECU> getECUs() {
+		return ecus;
 	}
 	
 }

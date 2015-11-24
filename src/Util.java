@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -127,43 +128,72 @@ public class Util {
 		return m;
 	}
 	
-	public static void printLog(List<Log> log, Hashtable<String, String> data, Core core) {
+	public static void printLog() {
 		try {
-			Collections.sort(log);
-			File logFile = new File("io/output/log_core" + core.id + ".html");
-			FileWriter fw = new FileWriter(logFile, false);
-			PrintWriter pw = new PrintWriter(fw);
-			StringBuilder builder = new StringBuilder();
-			builder.append("<html><body><u><b>General Stats</b></u><br/>");
-			builder.append("<b>CPU load: </b>" + (100.0-Double.valueOf(data.get("idle"))) + "%");
-			builder.append("<br/><b>End to end delay SWC0: </b>" + data.get("e2e0"));
-			builder.append("<br/><b>End to end delay SWC1: </b>" + data.get("e2e1"));
-			builder.append("<br/><b>End to end delay SWC2: </b>" + data.get("e2e2"));
-			builder.append("<br/><b>Intra ECU Bus: </b>" + core.ecu.bus.delay);
-			builder.append("<br/><b>Inter ECU Bus: </b>" + Architecture.bus.delay);
-			builder.append("<br/><b>Message age: </b>" + core.scheduler.tasks.get(0).getMessage().getMessageAge());
-			builder.append("<br/><br/><u><b>Events</b></u>");
-			builder.append("<table border=\"1\"><tr><td><b>Task ID</b></td><td><b>Time</b></td><td><b>Log type</b></td><td><b>Message</b></td><td><b>Severity</b></td></tr>");
-			for (int i=0; i<log.size(); i++) {
-				String color = "black";
-				Log currentLog = log.get(i);
-				if (log.get(i).logSeverity == LogSeverity.CRITICAL) {
-					color = "red";
-				} else if (log.get(i).logType == LogType.MESSAGE_SENT || log.get(i).logType == LogType.MESSAGE_RECEIVED) {
-					color = "blue";
-				}
-				builder.append("<tr>");
-				builder.append(addLogCell(color, Integer.valueOf(currentLog.taskId).toString()));
-				builder.append(addLogCell(color, Double.valueOf(currentLog.time).toString()));
-				builder.append(addLogCell(color, currentLog.logType.toString()));
-				builder.append(addLogCell(color, currentLog.message));
-				builder.append(addLogCell(color, currentLog.logSeverity.toString()));
-				builder.append("</tr>");
+
+			String _logPath = "io/output/log";
+			File _logDir = new File(_logPath);
+			
+			if (_logDir.exists()) {
+				delete(_logDir);
 			}
-			builder.append("</table></body></html>");
-			pw.print(builder.toString());
-			pw.close();
-			fw.close();
+			
+			_logDir.mkdir();
+			
+			for (ECU e : Architecture.getECUs()) {
+				String _ecuPath = "io/output/log/ecu" + e.id;
+				File _ecuDir = new File(_ecuPath);
+				_ecuDir.mkdir();
+				for (Core c : e.cores) {
+					Collections.sort(c.scheduler.logs);
+					String _corePath = _ecuPath + "/core" + c.id;
+					File _coreDir = new File(_corePath);
+					_coreDir.mkdir();
+					File _eventsFile = new File(_corePath + "/events.html");
+					File _statsFile = new File(_corePath + "/stats.html");
+					FileWriter fw = new FileWriter(_statsFile, false);
+					PrintWriter pw = new PrintWriter(fw);
+					StringBuilder builder = new StringBuilder();
+					builder.append("<html><body><u><b>General Stats</b></u><br/><br/>");
+					builder.append("<b>CPU load: </b>" + (100.0-Double.valueOf(c.scheduler.data.get("idle"))) + "%");
+					builder.append("<br/><b>End to end delay SWC0: </b>" + c.scheduler.data.get("e2e0"));
+					builder.append("<br/><b>End to end delay SWC1: </b>" + c.scheduler.data.get("e2e1"));
+					builder.append("<br/><b>End to end delay SWC2: </b>" + c.scheduler.data.get("e2e2"));
+					builder.append("<br/><b>Intra ECU Bus: </b>" + e.bus.delay);
+					builder.append("<br/><b>Inter ECU Bus: </b>" + Architecture.bus.delay);
+					if (c.scheduler.tasks.get(0).getMessage() != null) {
+						builder.append("<br/><b>Message age: </b>" + c.scheduler.tasks.get(0).getMessage().getMessageAge());	
+					}
+					pw.print(builder.toString());
+					fw.close();
+					builder = new StringBuilder();
+					fw = new FileWriter(_eventsFile, false);
+					pw = new PrintWriter(fw);
+					builder.append("<u><b>Events</b></u><br/><br/>");
+					builder.append("<table border=\"1\"><tr><td><b>Task ID</b></td><td><b>Time</b></td><td><b>Log type</b></td><td><b>Message</b></td><td><b>Severity</b></td></tr>");
+					for (int i=0; i<c.scheduler.logs.size(); i++) {
+						String color = "black";
+						Log currentLog = c.scheduler.logs.get(i);
+						if (c.scheduler.logs.get(i).logSeverity == LogSeverity.CRITICAL) {
+							color = "red";
+						} else if (c.scheduler.logs.get(i).logType == LogType.MESSAGE_SENT || c.scheduler.logs.get(i).logType == LogType.MESSAGE_RECEIVED) {
+							color = "blue";
+						}
+						builder.append("<tr>");
+						builder.append(addLogCell(color, Integer.valueOf(currentLog.taskId).toString()));
+						builder.append(addLogCell(color, Double.valueOf(currentLog.time).toString()));
+						builder.append(addLogCell(color, currentLog.logType.toString()));
+						builder.append(addLogCell(color, currentLog.message));
+						builder.append(addLogCell(color, currentLog.logSeverity.toString()));
+						builder.append("</tr>");
+					}
+					builder.append("</table></body></html>");
+					pw.print(builder.toString());
+					pw.close();
+					fw.close();		
+				}
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -171,6 +201,34 @@ public class Util {
 	
 	private static String addLogCell(String color, String text) {
 		return "<td><font color = \"" + color + "\">" + text + "</font></td>";
+	}
+	
+	private static void delete(File _file) throws IOException {
+		
+		if (_file.isDirectory()) {
+			try {
+				if (_file.list().length == 0) {
+					_file.delete();
+					System.out.println("Directory deleted: " + _file.getAbsolutePath());
+				} else {
+					String files[] = _file.list();
+					for (String tmp : files) {
+						File _del = new File(_file, tmp);
+						delete(_del);
+					}
+					if (_file.list().length == 0) {
+						_file.delete();
+						System.out.println("Directory deleted: " + _file.getAbsolutePath());
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} else {
+			_file.delete();
+			System.out.println("File deleted: " + _file.getAbsolutePath());
+		}
+		
 	}
 	
 }

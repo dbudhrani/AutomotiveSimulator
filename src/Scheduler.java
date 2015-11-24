@@ -4,7 +4,7 @@ import java.util.Hashtable;
 import java.util.List;
 
 
-public class Scheduler2 {
+public class Scheduler {
 
 	public List<OsTask> tasks;
 	public List<Event> events;
@@ -24,7 +24,7 @@ public class Scheduler2 {
 	OsTask currentTask;
 	Core core;
 	
-	public Scheduler2(Core _core) {
+	public Scheduler(Core _core) {
 		this.tasks = new ArrayList<OsTask>();
 		this.events = new ArrayList<Event>();
 		this.logs = new ArrayList<Log>();
@@ -75,7 +75,7 @@ public class Scheduler2 {
 		}
 
 		// print log
-		finishExecution(true);
+		finishExecution();
 	}
 	
 	private int getNextPeriodStartOfTask(OsTask task) {
@@ -265,12 +265,12 @@ public class Scheduler2 {
 		setTaskToRunning(nextTask);
 	}
 	
-	private void finishExecution(boolean _exit) {
+	private void finishExecution() {
 		data.put("idle", Double.valueOf(((double) idleTime/(double) maxTime)*100).toString());
 		data.put("e2e0", Double.valueOf(Architecture.getSWComponents().get(0).e2eDelay).toString());
 		data.put("e2e1", Double.valueOf(Architecture.getSWComponents().get(1).e2eDelay).toString());
 		data.put("e2e2", Double.valueOf(Architecture.getSWComponents().get(2).e2eDelay).toString());
-		Util.printLog(logs, data, core);
+		//Util.printLog(logs, data);
 //		System.exit(-1);
 	}
 	
