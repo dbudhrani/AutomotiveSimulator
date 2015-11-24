@@ -133,8 +133,10 @@ public class Util {
 			PrintWriter pw = new PrintWriter(fw);
 			StringBuilder builder = new StringBuilder();
 			builder.append("<html><body>");
-			builder.append("% time idle: " + data.get("idle") + "%");
-			builder.append("End to end delay: " + data.get("e2e"));
+			builder.append("% CPU load: " + (100.0-Double.valueOf(data.get("idle"))) + "%");
+			builder.append("<br/>End to end delay: " + data.get("e2e0"));
+			builder.append("<br/>End to end delay: " + data.get("e2e1"));
+			builder.append("<br/>End to end delay: " + data.get("e2e2"));
 			builder.append("<table border=\"1\"><tr><td><b>Task ID</b></td><td><b>Time</b></td><td><b>Log type</b></td><td><b>Severity</b></td></tr>");
 			for (int i=0; i<log.size(); i++) {
 				String color = "black";

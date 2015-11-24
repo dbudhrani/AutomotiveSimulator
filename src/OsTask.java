@@ -22,6 +22,8 @@ public class OsTask implements Comparable<OsTask> {
 	public Core core;
 	public List<Runnable> runnables;
 	
+	public boolean firstPeriodExecuted;
+	
 	public OsTask(Runnable _runnable) {
 		
 	}
@@ -38,6 +40,7 @@ public class OsTask implements Comparable<OsTask> {
 		this.core = _core;
 		this.runnables = _runnables;
 		this.execTime = 0;
+		this.firstPeriodExecuted = false;
 	}
 
 	@Override

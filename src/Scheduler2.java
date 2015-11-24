@@ -67,7 +67,7 @@ public class Scheduler2 {
 					// do stuff
 					logs.add(new Log(-1, timer, LogType.START_IDLE, LogSeverity.NORMAL));
 					idleTimeStart = timer;
-					runNextTask();
+					runNextTask(true);
 				}
 			} else {
 				checkPreemption();
@@ -138,6 +138,9 @@ public class Scheduler2 {
 				break;
 			}
 		}
+//		for (SWComponent c : Architecture.getSWComponents()) {
+//			addDelayToSWComponent(c);
+//		}
 		sortTasks();
 	}
 	
@@ -146,6 +149,8 @@ public class Scheduler2 {
 		currentTask.state = OsTaskState.RUNNING;
 		logs.add(new Log(task.id, timer, LogType.TASK_EXECUTING, LogSeverity.NORMAL));
 		// TODO delete message from input queue
+		
+			addDelayToSWComponent();
 		
 		// TODO be careful, this should not be executed on preemption
 		if (currentTask.currentExecTime == 0) {
@@ -173,8 +178,11 @@ public class Scheduler2 {
 			core.addMessageToOutputQueue(currentTask.getMessage());
 		}
 		logs.add(new Log(currentTask.id, timer, LogType.TASK_FINISHED, LogSeverity.NORMAL));
-		for (SWComponent c : Architecture.getSWComponents()) {
-			addDelayToSWComponent(c);
+		if (!currentTask.firstPeriodExecuted) {
+			//for (SWComponent c : Architecture.getSWComponents()) {
+				addDelayComponent();	
+		//	}
+			currentTask.firstPeriodExecuted = true;
 		}
 		int nextPeriodStartOfTask = getNextPeriodStartOfTask(currentTask);
 		double delay = timer - nextPeriodStartOfTask;
@@ -187,7 +195,7 @@ public class Scheduler2 {
 			// Deadline missed
 			logs.add(new Log(currentTask.id, nextPeriodStartOfTask, LogType.DEADLINE_MISSED, LogSeverity.CRITICAL));
 			setTaskToReady(currentTask, false);
-			runNextTask();
+			runNextTask(false);
 			//finishExecution(false);
 		}
 	}
@@ -199,12 +207,12 @@ public class Scheduler2 {
 			if (events.get(i).time == firstTime) {
 				for (int j=0; j<tasks.size(); j++) {
 					if (tasks.get(j).id == events.get(i).taskId) {
-						if (tasks.get(j).execTime == tasks.get(j).currentExecTime) {
+						if ((tasks.get(j).execTime != 0 && tasks.get(j).currentExecTime != 0) && (tasks.get(j).execTime == tasks.get(j).currentExecTime)) {
 							setTaskToReady(tasks.get(j), false);	
 						} else {
-							logs.add(new Log(currentTask.id, firstTime, LogType.DEADLINE_MISSED, LogSeverity.CRITICAL));
-							setTaskToReady(currentTask, false);
-							runNextTask();
+							logs.add(new Log(tasks.get(j).id, firstTime, LogType.DEADLINE_MISSED, LogSeverity.CRITICAL));
+							setTaskToReady(tasks.get(j), false);
+							runNextTask(false);
 							//finishExecution(false);
 						}
 						break;
@@ -224,7 +232,7 @@ public class Scheduler2 {
 		}
 	}
 	
-	private void runNextTask() {
+	private void runNextTask(boolean _isIdle) {
 		Event firstEvent = events.get(0);
 		timer = firstEvent.time;
 		OsTask nextTask = null;
@@ -247,15 +255,20 @@ public class Scheduler2 {
 				break;
 			}
 		}
-		logs.add(new Log(-1, timer, LogType.FINISH_IDLE, LogSeverity.NORMAL));
-		idleTimeFinish = timer;
-		idleTime += (idleTimeFinish - idleTimeStart);
+		if (_isIdle) {
+			logs.add(new Log(-1, timer, LogType.FINISH_IDLE, LogSeverity.NORMAL));
+			idleTimeFinish = timer;
+			idleTime += (idleTimeFinish - idleTimeStart);
+		}
+		setTaskToReady(nextTask, false);
 		setTaskToRunning(nextTask);
 	}
 	
 	private void finishExecution(boolean _exit) {
-		data.put("idle", Double.valueOf((double) idleTime/(double) maxTime).toString());
-		data.put("e2e", Double.valueOf(Architecture.getSWComponents().get(0).e2eDelay).toString());
+		data.put("idle", Double.valueOf(((double) idleTime/(double) maxTime)*100).toString());
+		data.put("e2e0", Double.valueOf(Architecture.getSWComponents().get(0).e2eDelay).toString());
+		data.put("e2e1", Double.valueOf(Architecture.getSWComponents().get(1).e2eDelay).toString());
+		data.put("e2e2", Double.valueOf(Architecture.getSWComponents().get(2).e2eDelay).toString());
 		Util.printLog(logs, data);
 		System.exit(-1);
 	}
@@ -275,12 +288,11 @@ public class Scheduler2 {
 		}
 	}
 	
-	public void addDelayToSWComponent(SWComponent _component) {
+	public void addDelayToSWComponent() {
 		// TODO change
 		List<Runnable> tempRunnables = new ArrayList<Runnable>();
 		for (Runnable r1 : currentTask.runnables) {
 			for (SWComponent c : Architecture.getSWComponents()) {
-				if (_component.id == c.id) {
 					for (Runnable r2 : c.runnables) {
 						if (r1.id == r2.id && !tempRunnables.contains(r1)) {
 //							c.addDelay(delay);
@@ -288,7 +300,6 @@ public class Scheduler2 {
 //							break;
 						}
 					}	
-				}
 			}
 		}
 		
@@ -297,7 +308,30 @@ public class Scheduler2 {
 			delay += r.getExecTime();
 		}
 		
-		_component.addDelay((getNextPeriodStartOfTask(currentTask) - currentTask.period) +  delay);
+//		_component.addDelay((getNextPeriodStartOfTask(currentTask) - currentTask.period) +  delay);
+
+	}
+	
+	public void addDelayComponent() {
+		List<SWComponent> tempComponents = new ArrayList<SWComponent>();
+		for (Runnable r1 : currentTask.runnables) {
+			for (SWComponent c : Architecture.getSWComponents()) {
+					for (Runnable r2 : c.runnables) {
+						if (r1.id == r2.id && !tempComponents.contains(c)) {
+//							c.addDelay(delay);
+							tempComponents.add(c);
+//							break;
+						}
+					}	
+			}
+		}
+		
+		double delay = timer - (getNextPeriodStartOfTask(currentTask) - currentTask.period);
+		for (SWComponent c : tempComponents) {
+			if (delay > c.e2eDelay) {
+				c.e2eDelay = delay;
+			}
+		}
 	}
 
 	
