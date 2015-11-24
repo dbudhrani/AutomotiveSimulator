@@ -134,16 +134,16 @@ public class Util {
 			FileWriter fw = new FileWriter(logFile, false);
 			PrintWriter pw = new PrintWriter(fw);
 			StringBuilder builder = new StringBuilder();
-			builder.append("<html><body>");
-			builder.append("% CPU load: " + (100.0-Double.valueOf(data.get("idle"))) + "%");
-			builder.append("<br/>End to end delay: " + data.get("e2e0"));
-			builder.append("<br/>End to end delay: " + data.get("e2e1"));
-			builder.append("<br/>End to end delay: " + data.get("e2e2"));
-			builder.append("<br/>Intra ECU Bus: " + core.ecu.bus.delay);
-			builder.append("<br/>Inter ECU Bus: " + Architecture.bus.delay);
-			builder.append("<br/>Message age: " + core.scheduler.tasks.get(0).getMessage().getMessageAge());
-			
-			builder.append("<table border=\"1\"><tr><td><b>Task ID</b></td><td><b>Time</b></td><td><b>Log type</b></td><td><b>Severity</b></td></tr>");
+			builder.append("<html><body><u><b>General Stats</b></u><br/>");
+			builder.append("<b>CPU load: </b>" + (100.0-Double.valueOf(data.get("idle"))) + "%");
+			builder.append("<br/><b>End to end delay SWC0: </b>" + data.get("e2e0"));
+			builder.append("<br/><b>End to end delay SWC1: </b>" + data.get("e2e1"));
+			builder.append("<br/><b>End to end delay SWC2: </b>" + data.get("e2e2"));
+			builder.append("<br/><b>Intra ECU Bus: </b>" + core.ecu.bus.delay);
+			builder.append("<br/><b>Inter ECU Bus: </b>" + Architecture.bus.delay);
+			builder.append("<br/><b>Message age: </b>" + core.scheduler.tasks.get(0).getMessage().getMessageAge());
+			builder.append("<br/><br/><u><b>Events</b></u>");
+			builder.append("<table border=\"1\"><tr><td><b>Task ID</b></td><td><b>Time</b></td><td><b>Log type</b></td><td><b>Message</b></td><td><b>Severity</b></td></tr>");
 			for (int i=0; i<log.size(); i++) {
 				String color = "black";
 				Log currentLog = log.get(i);
@@ -156,6 +156,7 @@ public class Util {
 				builder.append(addLogCell(color, Integer.valueOf(currentLog.taskId).toString()));
 				builder.append(addLogCell(color, Double.valueOf(currentLog.time).toString()));
 				builder.append(addLogCell(color, currentLog.logType.toString()));
+				builder.append(addLogCell(color, currentLog.message));
 				builder.append(addLogCell(color, currentLog.logSeverity.toString()));
 				builder.append("</tr>");
 			}

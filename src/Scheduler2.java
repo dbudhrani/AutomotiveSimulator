@@ -65,7 +65,7 @@ public class Scheduler2 {
 					setTaskToRunning(tasks.get(0));
 				} else {
 					// do stuff
-					logs.add(new Log(-1, timer, LogType.START_IDLE, LogSeverity.NORMAL));
+					logs.add(new Log(-1, timer, LogType.START_IDLE, "", LogSeverity.NORMAL));
 					idleTimeStart = timer;
 					runNextTask(true);
 				}
@@ -101,6 +101,7 @@ public class Scheduler2 {
 	private void setTaskToWaiting(OsTask task) {
 		OsTask newTask = task;
 		newTask.state = OsTaskState.WAITING;
+		logs.add(new Log(task.id, timer, LogType.TASK_WAITING, "", LogSeverity.NORMAL));
 		for (int i=0; i<tasks.size(); i++) {
 			if (task.id == tasks.get(i).id) {
 				tasks.set(i, newTask);
@@ -113,7 +114,7 @@ public class Scheduler2 {
 	private void setTaskToReady(OsTask task, boolean isPreemption) {
 		OsTask newTask = task;
 		newTask.state = OsTaskState.READY;
-		logs.add(new Log(task.id, timer, LogType.TASK_READY, LogSeverity.NORMAL));
+		logs.add(new Log(task.id, timer, LogType.TASK_READY, "", LogSeverity.NORMAL));
 		if (!isPreemption || task.state == OsTaskState.WAITING) {
 			//W->Rdy || Run->Rdy
 			int t = -1;
@@ -147,7 +148,6 @@ public class Scheduler2 {
 	private void setTaskToRunning(OsTask task) {
 		currentTask = task;
 		currentTask.state = OsTaskState.RUNNING;
-		logs.add(new Log(task.id, timer, LogType.TASK_EXECUTING, LogSeverity.NORMAL));
 		// TODO delete message from input queue
 		
 			addDelayToSWComponent();
@@ -158,13 +158,14 @@ public class Scheduler2 {
 		}
 		currentTaskRunningTimeStart = timer;
 		currentTaskRunningTimeFinish = timer + (currentTask.execTime - currentTask.currentExecTime);
+		logs.add(new Log(task.id, timer, LogType.TASK_EXECUTING, "Execution time: " + currentTask.execTime + ". Estimated finishing time: " + currentTaskRunningTimeFinish, LogSeverity.NORMAL));
 	}
 	
 	private void makePreemption(OsTask candidateTask) {
 		if (candidateTask.id == tasks.get(0).id) {
 			if (candidateTask.priority > currentTask.priority) {
 				setTaskToReady(currentTask, true);
-				logs.add(new Log(currentTask.id, timer, LogType.TASK_INTERRUPTED, LogSeverity.NORMAL));
+				logs.add(new Log(currentTask.id, timer, LogType.TASK_INTERRUPTED, "Current exec time: " + currentTask.currentExecTime, LogSeverity.NORMAL));
 				setTaskToRunning(candidateTask);
 			}
 		}
@@ -177,7 +178,7 @@ public class Scheduler2 {
 		if (!isTaskSameCore(currentTask.getMessage().dst)) {
 			core.addMessageToOutputQueue(currentTask.getMessage());
 		}
-		logs.add(new Log(currentTask.id, timer, LogType.TASK_FINISHED, LogSeverity.NORMAL));
+		logs.add(new Log(currentTask.id, timer, LogType.TASK_FINISHED, "", LogSeverity.NORMAL));
 		if (!currentTask.firstPeriodExecuted) {
 			//for (SWComponent c : Architecture.getSWComponents()) {
 				addDelayComponent();	
@@ -193,7 +194,7 @@ public class Scheduler2 {
 		} 
 		else {
 			// Deadline missed
-			logs.add(new Log(currentTask.id, nextPeriodStartOfTask, LogType.DEADLINE_MISSED, LogSeverity.CRITICAL));
+			logs.add(new Log(currentTask.id, nextPeriodStartOfTask, LogType.DEADLINE_MISSED, "", LogSeverity.CRITICAL));
 			setTaskToReady(currentTask, false);
 			runNextTask(false);
 			//finishExecution(false);
@@ -210,7 +211,7 @@ public class Scheduler2 {
 						if ((tasks.get(j).execTime != 0 && tasks.get(j).currentExecTime != 0) && (tasks.get(j).execTime == tasks.get(j).currentExecTime)) {
 							setTaskToReady(tasks.get(j), false);	
 						} else {
-							logs.add(new Log(tasks.get(j).id, firstTime, LogType.DEADLINE_MISSED, LogSeverity.CRITICAL));
+							logs.add(new Log(tasks.get(j).id, firstTime, LogType.DEADLINE_MISSED, "", LogSeverity.CRITICAL));
 							setTaskToReady(tasks.get(j), false);
 							runNextTask(false);
 							//finishExecution(false);
@@ -256,9 +257,9 @@ public class Scheduler2 {
 			}
 		}
 		if (_isIdle) {
-			logs.add(new Log(-1, timer, LogType.FINISH_IDLE, LogSeverity.NORMAL));
 			idleTimeFinish = timer;
 			idleTime += (idleTimeFinish - idleTimeStart);
+			logs.add(new Log(-1, timer, LogType.FINISH_IDLE, "Current idle time = " + (idleTimeFinish - idleTimeStart) + ". Total = " + idleTime, LogSeverity.NORMAL));
 		}
 		setTaskToReady(nextTask, false);
 		setTaskToRunning(nextTask);
@@ -284,7 +285,7 @@ public class Scheduler2 {
 	
 	public void coreReceivedMessage(Message _msg) {
 		if (isTaskSameCore(_msg.dst)) {
-			logs.add(new Log(_msg.dst, _msg.updTs, LogType.MESSAGE_RECEIVED, LogSeverity.NORMAL));			
+			this.logs.add(new Log(_msg.dst, _msg.updTs, LogType.MESSAGE_RECEIVED, "Message source: task " + _msg.src, LogSeverity.NORMAL));			
 		}
 		core.inputMessages.remove(_msg);
 	}
