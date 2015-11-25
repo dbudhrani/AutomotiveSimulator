@@ -270,6 +270,7 @@ public class Scheduler {
 		data.put("e2e0", Double.valueOf(Architecture.getSWComponents().get(0).e2eDelay).toString());
 		data.put("e2e1", Double.valueOf(Architecture.getSWComponents().get(1).e2eDelay).toString());
 		data.put("e2e2", Double.valueOf(Architecture.getSWComponents().get(2).e2eDelay).toString());
+		data.put("e2e3", Double.valueOf(Architecture.getSWComponents().get(3).e2eDelay).toString());
 		//Util.printLog(logs, data);
 //		System.exit(-1);
 	}

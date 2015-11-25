@@ -159,6 +159,7 @@ public class Util {
 					builder.append("<br/><b>End to end delay SWC0: </b>" + c.scheduler.data.get("e2e0"));
 					builder.append("<br/><b>End to end delay SWC1: </b>" + c.scheduler.data.get("e2e1"));
 					builder.append("<br/><b>End to end delay SWC2: </b>" + c.scheduler.data.get("e2e2"));
+					builder.append("<br/><b>End to end delay SWC3: </b>" + c.scheduler.data.get("e2e3"));
 					builder.append("<br/><b>Intra ECU Bus: </b>" + e.bus.delay);
 					builder.append("<br/><b>Inter ECU Bus: </b>" + Architecture.bus.delay);
 					if (c.scheduler.tasks.get(0).getMessage() != null) {
@@ -228,6 +229,10 @@ public class Util {
 			_file.delete();
 			System.out.println("File deleted: " + _file.getAbsolutePath());
 		}
+		
+	}
+	
+	public static void parseInputFile() {
 		
 	}
 	

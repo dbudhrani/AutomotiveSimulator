@@ -85,7 +85,7 @@ public class Architecture {
 		components.add(new SWComponent(1, "s1", tr1));
 		components.add(new SWComponent(2, "s2", tr2));
 		components.add(new SWComponent(3, "s3", tr3));
-		components.add(new SWComponent(3, "s3", tr4));
+		components.add(new SWComponent(4, "s4", tr4));
 		
 		
 		List<Runnable> run1 = new ArrayList<Runnable>();
@@ -139,7 +139,7 @@ public class Architecture {
 		
 		core.scheduler.execute(100);	
 		core2.scheduler.execute(100);	
-
+		
 		Util.printLog();
 		
 	}
@@ -151,5 +151,7 @@ public class Architecture {
 	public static List<ECU> getECUs() {
 		return ecus;
 	}
+	
+	
 	
 }
