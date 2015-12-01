@@ -11,18 +11,22 @@ public class Runnable {
 	public double bcet;
 	public double wcet;
 	public double execTime;
-	public double messageSize;
+	public int messageSize;
+	public int messagePriority;
+	public int messageDst;
 	
 	public Runnable(String _name) {
 		this.name = _name;
 	}
 	
-	public Runnable(int _id, String _name, double _bcet, double _wcet, int _messageSize) {
+	public Runnable(int _id, String _name, double _bcet, double _wcet, int _messageSize, int _messagePriority, int _messageDst) {
 		this.id = _id;
 		this.name = _name;
 		this.bcet = _bcet;
 		this.wcet = _wcet;
 		this.messageSize = _messageSize;
+		this.messagePriority = _messagePriority;
+		this.messageDst = _messageDst;
 	}
 	
 	public double computeExecTime() {

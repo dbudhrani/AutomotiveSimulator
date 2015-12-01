@@ -18,8 +18,9 @@ public class OsTask implements Comparable<OsTask> {
 	
 	public double priority;
 	
-	public Message message;
-	public MessageParams msgParams;
+	public List<Message> messages;
+	
+	
 	public Core core;
 	public List<Runnable> runnables;
 	
@@ -29,7 +30,7 @@ public class OsTask implements Comparable<OsTask> {
 		
 	}
 	
-	public OsTask(int _id, int _period, MessageParams _msgParams, Core _core) {
+	public OsTask(int _id, int _period, Core _core) {
 		this.id = _id;
 		//this.wcet = _wcet;
 		this.period = _period;
@@ -37,11 +38,11 @@ public class OsTask implements Comparable<OsTask> {
 		this.state = OsTaskState.WAITING;
 //		this.periodInit = 0;
 		this.currentExecTime = 0;
-		this.msgParams = _msgParams;
 		this.core = _core;
 		this.runnables = new ArrayList<Runnable>();
 		this.execTime = 0;
 		this.firstPeriodExecuted = false;
+		this.messages = new ArrayList<Message>();
 	}
 
 	@Override
@@ -54,13 +55,18 @@ public class OsTask implements Comparable<OsTask> {
 		return (int) (((double) ((_task.priority * stateInfluenceParam) - (this.priority * stateInfluenceThis)))*1000);
 	}
 	
-	public void createMessage(double _ts) {
-		this.message = new Message(9, id, 1, 23, false, _ts);
-		// TODO check message priority
+	public Message createMessage(double _ts, int _pr, int _sz, int _dst) {
+		Message msg = new Message(_pr, id, _dst, _sz, false, _ts);
+		this.messages.add(msg);
+		return msg;
 	}
 	
-	public Message getMessage() {
-		return this.message;
+	public void clearMessages() {
+		this.messages.clear();
+	}
+	
+	public List<Message> getMessages() {
+		return this.messages;
 	}
 	
 	private void computeExecTime(List<Runnable> _runnables) {

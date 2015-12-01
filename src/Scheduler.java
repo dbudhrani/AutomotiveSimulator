@@ -364,10 +364,23 @@ public class Scheduler {
 			}
 			
 			
-			currentTask.createMessage(timer);
-			if (!isTaskSameCore(currentTask.getMessage().dst)) {
-				core.addMessageToOutputQueue(currentTask.getMessage());
-			}	
+			
+			List<Runnable> _r = findRunnables(currentTask);
+			List<Integer> _dstTasks = new ArrayList<Integer>();
+			for (Runnable r : _r) {
+				if (r.messageDst != -1) {
+					OsTask t = findTaskOfRunnable(r.messageDst);
+					if (!isTaskSameCore(t.id) && !_dstTasks.contains(t.id)) {
+						_dstTasks.add(t.id);
+						Message msg = currentTask.createMessage(timer, r.messagePriority, r.messageSize, t.id);
+						core.addMessageToOutputQueue(msg);
+					}	
+				} else {
+					Message msg = currentTask.createMessage(timer, r.messagePriority, r.messageSize, -1);
+					core.addMessageToOutputQueue(msg);
+				}
+			}
+			currentTask.clearMessages();	
 		} else {
 			logs.add(new Log(currentTask.id, taskDeadline, LogType.DEADLINE_MISSED, "", LogSeverity.CRITICAL));
 		}
@@ -558,6 +571,21 @@ public class Scheduler {
 		for (Integer k : htSWCOsTasks.keySet()) {
 			SWComponentInitiated.put(k, false);
 		}
+	}
+	
+	public OsTask findTaskOfRunnable(int _runnableId) {
+		for (ECU e : core.ecu.arc.getECUs()) {
+			for (Core c : e.cores) {
+				for (OsTask t : c.scheduler.tasks) {
+					for (Runnable r : t.runnables) {
+						if (r.id == _runnableId) {
+							return t;
+						}
+					}
+				}		
+			}
+		}
+		return null;
 	}
 	
 }

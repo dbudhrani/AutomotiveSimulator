@@ -180,9 +180,9 @@ public class Util {
 					
 					builder.append("<br/><b>Intra ECU Bus: </b>" + e.bus.delay);
 					builder.append("<br/><b>Inter ECU Bus: </b>" + arc.bus.delay);
-					if (c.scheduler.tasks.get(0).getMessage() != null) {
-						builder.append("<br/><b>Message age: </b>" + c.scheduler.tasks.get(0).getMessage().getMessageAge());	
-					}
+//					if (c.scheduler.tasks.get(0).getMessages() != null) {
+//						builder.append("<br/><b>Message age: </b>" + c.scheduler.tasks.get(0).getMessage().getMessageAge());	
+//					}
 					pw.print(builder.toString());
 					fw.close();
 					builder = new StringBuilder();
@@ -306,9 +306,11 @@ public class Util {
 									Integer _rid = Integer.valueOf(runnableNode.getAttributes().getNamedItem("id").getNodeValue());
 									String _rname = runnableNode.getAttributes().getNamedItem("name").getNodeValue();
 									Integer _rmsg = Integer.valueOf(runnableNode.getAttributes().getNamedItem("messageSize").getNodeValue());
+									Integer _rmpr = Integer.valueOf(runnableNode.getAttributes().getNamedItem("messagePriority").getNodeValue());
+									Integer _dst = Integer.valueOf(runnableNode.getAttributes().getNamedItem("dst").getNodeValue());
 									Double _rbcet = Double.valueOf(runnableNode.getAttributes().getNamedItem("bcet").getNodeValue());
 									Double _rwcet = Double.valueOf(runnableNode.getAttributes().getNamedItem("wcet").getNodeValue());
-									Runnable r = new Runnable(_rid, _rname, _rbcet, _rwcet, _rmsg);
+									Runnable r = new Runnable(_rid, _rname, _rbcet, _rwcet, _rmsg, _rmpr, _dst);
 									_component.addRunnable(r);
 									runnablesHT.put(_rid, r);
 								}
@@ -371,7 +373,7 @@ public class Util {
 											if (osTaskNode.getNodeType() == 1) {
 												Integer _otid = Integer.valueOf(osTaskNode.getAttributes().getNamedItem("id").getNodeValue());
 												Integer _otperiod = Integer.valueOf(osTaskNode.getAttributes().getNamedItem("period").getNodeValue());
-												OsTask _osTask = new OsTask(_otid, _otperiod, null, c);
+												OsTask _osTask = new OsTask(_otid, _otperiod, c);
 												NodeList osTaskChildren = osTaskNode.getChildNodes();
 												List<Runnable> _taskRunnables = new ArrayList<Runnable>();
 												for (int m=0; m<osTaskChildren.getLength(); m++) {
