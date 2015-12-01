@@ -49,5 +49,9 @@ public class InterECUBus {
 			}
 		}
 	}
+
+	public void addECU(ECU e) {
+		this.ecus.add(e);
+	}
 	
 }

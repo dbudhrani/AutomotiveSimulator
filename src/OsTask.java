@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -28,7 +29,7 @@ public class OsTask implements Comparable<OsTask> {
 		
 	}
 	
-	public OsTask(int _id, int _period, MessageParams _msgParams, Core _core, List<Runnable> _runnables) {
+	public OsTask(int _id, int _period, MessageParams _msgParams, Core _core) {
 		this.id = _id;
 		//this.wcet = _wcet;
 		this.period = _period;
@@ -38,7 +39,7 @@ public class OsTask implements Comparable<OsTask> {
 		this.currentExecTime = 0;
 		this.msgParams = _msgParams;
 		this.core = _core;
-		this.runnables = _runnables;
+		this.runnables = new ArrayList<Runnable>();
 		this.execTime = 0;
 		this.firstPeriodExecuted = false;
 	}
@@ -54,7 +55,7 @@ public class OsTask implements Comparable<OsTask> {
 	}
 	
 	public void createMessage(double _ts) {
-		this.message = new Message(9, id, msgParams.dst, msgParams.size, false, _ts);
+		this.message = new Message(9, id, 1, 23, false, _ts);
 		// TODO check message priority
 	}
 	
@@ -62,17 +63,21 @@ public class OsTask implements Comparable<OsTask> {
 		return this.message;
 	}
 	
-	private void computeExecTime() {
+	private void computeExecTime(List<Runnable> _runnables) {
 		this.execTime = 0;
-		for (Runnable r : runnables) {
+		for (Runnable r : _runnables) {
 			this.execTime += r.computeExecTime();
 		}
 	}
 
-	public double computeTaskTime() {
-		computeExecTime();
+	public double computeTaskTime(List<Runnable> r) {
+		computeExecTime(r);
 		this.execTime = (2.4*this.execTime)/this.core.ecu.processorSpeed;
 		return this.execTime;
+	}
+	
+	public void addRunnable(Runnable r) {
+		this.runnables.add(r);
 	}
 	
 }
