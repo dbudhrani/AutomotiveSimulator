@@ -14,7 +14,7 @@ public class Architecture {
 		ecus = new ArrayList<ECU>();
 	}
 	
-	public void execute() {
+	public void execute(int _maxTime) {
 	
 //		components = new ArrayList<SWComponent>();
 //		ecus = new ArrayList<ECU>();
@@ -152,7 +152,7 @@ public class Architecture {
 //					firstSWComponent = 2;
 //				}
 				c.scheduler.init();
-				c.scheduler.execute2(100);
+				c.scheduler.execute2(_maxTime);
 			}
 		}
 		

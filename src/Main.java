@@ -10,7 +10,7 @@ public class Main {
 	public static void main(String[] args) {
 		
 		Architecture a = Util.parseInputFile("io/input/architecture1.xml");
-		a.execute();
+		a.execute(1000);
 		
 		
 		Util.printLog(a);

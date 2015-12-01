@@ -86,7 +86,7 @@
 		<SWComponent id="1" name="s1" time="10.2">
 			<Runnables>
 				<Runnable id="1" name="r1" messageSize="23" messagePriority="1" dst="9" bcet="2.3" wcet="4.5" time="5.4" />
-				<Runnable id="2" name="r2" messageSize="12" messagePriority="1" dst="12" bcet="2.5" wcet="4.2" time="3.4" />
+				<Runnable id="2" name="r2" messageSize="12" messagePriority="1" dst="5" bcet="2.5" wcet="4.2" time="3.4" />
 				<Runnable id="3" name="r3" messageSize="10" messagePriority="1" dst="-1" bcet="1.2" wcet="3.4" time="3.3" />
 			</Runnables>
 		</SWComponent>
