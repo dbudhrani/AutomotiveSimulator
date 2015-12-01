@@ -46,7 +46,7 @@ public class OsTask implements Comparable<OsTask> {
 
 	@Override
 	public int compareTo(OsTask _task) {
-
+ 
 		int stateInfluenceThis = this.state == OsTaskState.READY ? 1 : 0;
 		int stateInfluenceParam = _task.state == OsTaskState.READY ? 1 : 0;
 		
