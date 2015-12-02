@@ -21,6 +21,13 @@ public class Scheduler {
 	public double idleTimeStart = 0;
 	public double idleTimeFinish = 0;
 	
+	public Hashtable<Integer, List<OsTask>> htSWCOsTasks;
+	public Hashtable<Integer, Hashtable<Integer, List<Double>>> startingTimes;
+	public Hashtable<Integer, Hashtable<Integer, List<Double>>> finishingTimes;
+	public Hashtable<Integer, List<Double>> e2eDelays;
+
+	public List<Integer> swComponentIds;
+	
 	OsTask currentTask;
 	Core core;
 	
@@ -31,6 +38,11 @@ public class Scheduler {
 		this.data = new Hashtable<String, String>();
 		this.timer = 0;
 		this.core = _core;
+		this.htSWCOsTasks = new Hashtable<Integer, List<OsTask>>();
+		this.startingTimes = new Hashtable<Integer, Hashtable<Integer, List<Double>>>();
+		this.finishingTimes = new Hashtable<Integer, Hashtable<Integer, List<Double>>>();
+		this.e2eDelays = new Hashtable<Integer, List<Double>>();
+		this.swComponentIds = new ArrayList<Integer>();
 	}
 
 	public void addOsTask(OsTask _osTask) {
@@ -38,6 +50,8 @@ public class Scheduler {
 	}
 	
 	public void init() {
+		loadSWComponentsOsTasks();
+		initStartFinishTimes();
 		for (int i=0; i<tasks.size(); i++) {
 //			tasks.get(i).state = OsTaskState.READY;
 //			events.add(new Event(tasks.get(i).id, tasks.get(i).period, EventType.NEW_PERIOD_START));
@@ -139,6 +153,11 @@ public class Scheduler {
 				break;
 			}
 		}
+		
+		if (timer > 0 && !isPreemption) {
+			task.incrementPeriodCounter();
+		}
+		
 //		for (SWComponent c : Architecture.getSWComponents()) {
 //			addDelayToSWComponent(c);
 //		}
@@ -174,10 +193,10 @@ public class Scheduler {
 	private void taskFinished() {
 		timer = currentTaskRunningTimeFinish;
 		currentTask.currentExecTime = currentTask.execTime;
-		currentTask.createMessage(timer);
-		if (!isTaskSameCore(currentTask.getMessage().dst)) {
-			core.addMessageToOutputQueue(currentTask.getMessage());
-		}
+//		currentTask.createMessage(timer);
+//		if (!isTaskSameCore(currentTask.getMessage().dst)) {
+//			core.addMessageToOutputQueue(currentTask.getMessage());
+//		}
 		logs.add(new Log(currentTask.id, timer, LogType.TASK_FINISHED, "", LogSeverity.NORMAL));
 		if (!currentTask.firstPeriodExecuted) {
 			//for (SWComponent c : Architecture.getSWComponents()) {
@@ -187,9 +206,18 @@ public class Scheduler {
 		}
 		int nextPeriodStartOfTask = getNextPeriodStartOfTask(currentTask);
 		double delay = timer - nextPeriodStartOfTask;
+		
+		List<SWComponent> components = getSWComponentsFromCurrentTask();
+		for (SWComponent c : components) {
+			addStartTime(c, currentTask.periodCounter, nextPeriodStartOfTask - currentTask.period);
+			addFinishTime(c, currentTask.periodCounter, timer);
+		}
+		
 		if (timer < nextPeriodStartOfTask) {
+			sendMessages();
 			setTaskToWaiting(currentTask);
 		} else if (timer == nextPeriodStartOfTask) {
+			sendMessages();
 			setTaskToReady(currentTask, false);
 		} 
 		else {
@@ -267,10 +295,10 @@ public class Scheduler {
 	
 	private void finishExecution() {
 		data.put("idle", Double.valueOf(((double) idleTime/(double) maxTime)*100).toString());
-		data.put("e2e0", Double.valueOf(Architecture.getSWComponents().get(0).e2eDelay).toString());
-		data.put("e2e1", Double.valueOf(Architecture.getSWComponents().get(1).e2eDelay).toString());
-		data.put("e2e2", Double.valueOf(Architecture.getSWComponents().get(2).e2eDelay).toString());
-		data.put("e2e3", Double.valueOf(Architecture.getSWComponents().get(3).e2eDelay).toString());
+		data.put("e2e0", Double.valueOf(core.ecu.arc.getSWComponents().get(0).e2eDelay).toString());
+		data.put("e2e1", Double.valueOf(core.ecu.arc.getSWComponents().get(1).e2eDelay).toString());
+		data.put("e2e2", Double.valueOf(core.ecu.arc.getSWComponents().get(2).e2eDelay).toString());
+		data.put("e2e3", Double.valueOf(core.ecu.arc.getSWComponents().get(3).e2eDelay).toString());
 		//Util.printLog(logs, data);
 //		System.exit(-1);
 	}
@@ -286,7 +314,7 @@ public class Scheduler {
 	
 	public void coreReceivedMessage(Message _msg) {
 		if (isTaskSameCore(_msg.dst)) {
-			this.logs.add(new Log(_msg.dst, _msg.updTs, LogType.MESSAGE_RECEIVED, "Message source: task " + _msg.src, LogSeverity.NORMAL));			
+			this.logs.add(new Log(_msg.dst, _msg.updTs, LogType.MESSAGE_RECEIVED, "Message source: task " + _msg.src + ". Message age: " + Double.valueOf(_msg.updTs - _msg.ts).toString(), LogSeverity.NORMAL));			
 		}
 		core.inputMessages.remove(_msg);
 	}
@@ -295,7 +323,7 @@ public class Scheduler {
 		// TODO change
 		List<Runnable> tempRunnables = new ArrayList<Runnable>();
 		for (Runnable r1 : currentTask.runnables) {
-			for (SWComponent c : Architecture.getSWComponents()) {
+			for (SWComponent c : core.ecu.arc.getSWComponents()) {
 					for (Runnable r2 : c.runnables) {
 						if (r1.id == r2.id && !tempRunnables.contains(r1)) {
 //							c.addDelay(delay);
@@ -318,7 +346,7 @@ public class Scheduler {
 	public void addDelayComponent() {
 		List<SWComponent> tempComponents = new ArrayList<SWComponent>();
 		for (Runnable r1 : currentTask.runnables) {
-			for (SWComponent c : Architecture.getSWComponents()) {
+			for (SWComponent c : core.ecu.arc.getSWComponents()) {
 					for (Runnable r2 : c.runnables) {
 						if (r1.id == r2.id && !tempComponents.contains(c)) {
 //							c.addDelay(delay);
@@ -336,7 +364,101 @@ public class Scheduler {
 			}
 		}
 	}
-
 	
+	public void addSWComponentId(int id) {
+		this.swComponentIds.add(id);
+	}
+	
+	public void sendMessages() {
+		List<Integer> _dstTasks = new ArrayList<Integer>();
+		for (Runnable r : currentTask.runnables) {
+			if (r.messageDst != -1) {
+				OsTask t = findTaskOfRunnable(r.messageDst);
+				if (!isTaskSameCore(t.id) && !_dstTasks.contains(t.id)) {
+					_dstTasks.add(t.id);
+					Message msg = currentTask.createMessage(timer, r.messagePriority, r.messageSize, t.id, r.messageExtendedIdentifier);
+					core.addMessageToOutputQueue(msg);
+				}	
+			} else {
+				Message msg = currentTask.createMessage(timer, r.messagePriority, r.messageSize, -1, r.messageExtendedIdentifier);
+				core.addMessageToOutputQueue(msg);
+			}
+		}
+		currentTask.clearMessages();	
+	}
+	
+	public OsTask findTaskOfRunnable(int _runnableId) {
+		for (ECU e : core.ecu.arc.getECUs()) {
+			for (Core c : e.cores) {
+				for (OsTask t : c.scheduler.tasks) {
+					for (Runnable r : t.runnables) {
+						if (r.id == _runnableId) {
+							return t;
+						}
+					}
+				}		
+			}
+		}
+		return null;
+	}
+	
+	public List<SWComponent> getSWComponentsFromCurrentTask() {
+		List<SWComponent> tmp = new ArrayList<SWComponent>();
+		for (Runnable r1 : currentTask.runnables) {
+			for (SWComponent c : core.ecu.arc.getSWComponents()) {
+				for (Runnable r2 : c.runnables) {
+					if (r1.id == r2.id && !tmp.contains(c)) {
+						tmp.add(c);
+					}
+				}
+			}
+		}
+		return tmp;
+	}
+	
+	public void addStartTime(SWComponent _c, int _pc, double _t) {
+		if (this.startingTimes.get(_c.id).get(_pc) == null) {
+			this.startingTimes.get(_c.id).put(_pc, new ArrayList<Double>());
+		}
+		this.startingTimes.get(_c.id).get(_pc).add(_t);
+	}
+	
+	public void addFinishTime(SWComponent _c, int _pc, double _t) {
+		if (this.finishingTimes.get(_c.id).get(_pc) == null) {
+			this.finishingTimes.get(_c.id).put(_pc, new ArrayList<Double>());
+		}
+		this.finishingTimes.get(_c.id).get(_pc).add(_t);
+	}
+	
+	public void loadSWComponentsOsTasks() {
+		for (OsTask t : tasks) {
+			for (Runnable r1 : t.runnables) {
+				for (SWComponent c : core.ecu.arc.getSWComponents()) {
+					for (Runnable r2 : c.runnables) {
+						if (r1.id == r2.id) {
+							if (!this.htSWCOsTasks.containsKey(c.id)) {
+								List<OsTask> tasks = new ArrayList<OsTask>();
+								tasks.add(t);
+								this.htSWCOsTasks.put(c.id, tasks);
+							} else {
+								if (!this.htSWCOsTasks.get(c.id).contains(t)) {
+									this.htSWCOsTasks.get(c.id).add(t);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	public void initStartFinishTimes() {
+		for (Integer k : htSWCOsTasks.keySet()) {
+			Hashtable<Integer, List<Double>> ht = new Hashtable<Integer, List<Double>>();
+			Hashtable<Integer, List<Double>> ht2 = new Hashtable<Integer, List<Double>>();
+			startingTimes.put(k, ht);
+			finishingTimes.put(k, ht2);
+		}
+	}
 	
 }

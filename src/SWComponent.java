@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -12,15 +13,19 @@ public class SWComponent {
 		this.name = _name;
 	}
 	
-	public SWComponent(int _id, String _name, List<Runnable> _runnables) {
+	public SWComponent(int _id, String _name) {
 		this.id = _id;
 		this.name = _name;
 		this.e2eDelay = 0;
-		this.runnables = _runnables;
+		this.runnables = new ArrayList<Runnable>();
 	}
 	
 	public void addDelay(double _delay) {
 		this.e2eDelay += _delay;
+	}
+	
+	public void addRunnable(Runnable r) {
+		this.runnables.add(r);
 	}
 	
 }

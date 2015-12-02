@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -11,14 +12,16 @@ public class OsTask implements Comparable<OsTask> {
 	public int period;
 	
 	public int nextPeriod;
+	public int periodCounter;
 	
 //	public double periodInit;
 	public double currentExecTime;
 	
 	public double priority;
 	
-	public Message message;
-	public MessageParams msgParams;
+	public List<Message> messages;
+	
+	
 	public Core core;
 	public List<Runnable> runnables;
 	
@@ -28,7 +31,7 @@ public class OsTask implements Comparable<OsTask> {
 		
 	}
 	
-	public OsTask(int _id, int _period, MessageParams _msgParams, Core _core, List<Runnable> _runnables) {
+	public OsTask(int _id, int _period, Core _core) {
 		this.id = _id;
 		//this.wcet = _wcet;
 		this.period = _period;
@@ -36,16 +39,17 @@ public class OsTask implements Comparable<OsTask> {
 		this.state = OsTaskState.WAITING;
 //		this.periodInit = 0;
 		this.currentExecTime = 0;
-		this.msgParams = _msgParams;
 		this.core = _core;
-		this.runnables = _runnables;
+		this.runnables = new ArrayList<Runnable>();
 		this.execTime = 0;
 		this.firstPeriodExecuted = false;
+		this.messages = new ArrayList<Message>();
+		this.periodCounter = 0;
 	}
 
 	@Override
 	public int compareTo(OsTask _task) {
-
+ 
 		int stateInfluenceThis = this.state == OsTaskState.READY ? 1 : 0;
 		int stateInfluenceParam = _task.state == OsTaskState.READY ? 1 : 0;
 		
@@ -53,18 +57,23 @@ public class OsTask implements Comparable<OsTask> {
 		return (int) (((double) ((_task.priority * stateInfluenceParam) - (this.priority * stateInfluenceThis)))*1000);
 	}
 	
-	public void createMessage(double _ts) {
-		this.message = new Message(9, id, msgParams.dst, msgParams.size, false, _ts);
-		// TODO check message priority
+	public Message createMessage(double _ts, int _pr, int _sz, int _dst, boolean _ext) {
+		Message msg = new Message(_pr, id, _dst, _sz, false, _ts);
+		this.messages.add(msg);
+		return msg;
 	}
 	
-	public Message getMessage() {
-		return this.message;
+	public void clearMessages() {
+		this.messages.clear();
+	}
+	
+	public List<Message> getMessages() {
+		return this.messages;
 	}
 	
 	private void computeExecTime() {
 		this.execTime = 0;
-		for (Runnable r : runnables) {
+		for (Runnable r : this.runnables) {
 			this.execTime += r.computeExecTime();
 		}
 	}
@@ -73,6 +82,18 @@ public class OsTask implements Comparable<OsTask> {
 		computeExecTime();
 		this.execTime = (2.4*this.execTime)/this.core.ecu.processorSpeed;
 		return this.execTime;
+	}
+	
+	public void addRunnable(Runnable r) {
+		this.runnables.add(r);
+	}
+	
+	public int getPeriodCounter() {
+		return this.periodCounter;
+	}
+	
+	public void incrementPeriodCounter() {
+		this.periodCounter++;
 	}
 	
 }

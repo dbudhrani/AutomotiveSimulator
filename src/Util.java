@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
@@ -128,7 +129,7 @@ public class Util {
 		return m;
 	}
 	
-	public static void printLog() {
+	public static void printLog(Architecture arc) {
 		try {
 
 			String _logPath = "io/output/log";
@@ -140,7 +141,7 @@ public class Util {
 			
 			_logDir.mkdir();
 			
-			for (ECU e : Architecture.getECUs()) {
+			for (ECU e : arc.getECUs()) {
 				String _ecuPath = "io/output/log/ecu" + e.id;
 				File _ecuDir = new File(_ecuPath);
 				_ecuDir.mkdir();
@@ -156,15 +157,84 @@ public class Util {
 					StringBuilder builder = new StringBuilder();
 					builder.append("<html><body><u><b>General Stats</b></u><br/><br/>");
 					builder.append("<b>CPU load: </b>" + (100.0-Double.valueOf(c.scheduler.data.get("idle"))) + "%");
-					builder.append("<br/><b>End to end delay SWC0: </b>" + c.scheduler.data.get("e2e0"));
-					builder.append("<br/><b>End to end delay SWC1: </b>" + c.scheduler.data.get("e2e1"));
-					builder.append("<br/><b>End to end delay SWC2: </b>" + c.scheduler.data.get("e2e2"));
-					builder.append("<br/><b>End to end delay SWC3: </b>" + c.scheduler.data.get("e2e3"));
-					builder.append("<br/><b>Intra ECU Bus: </b>" + e.bus.delay);
-					builder.append("<br/><b>Inter ECU Bus: </b>" + Architecture.bus.delay);
-					if (c.scheduler.tasks.get(0).getMessage() != null) {
-						builder.append("<br/><b>Message age: </b>" + c.scheduler.tasks.get(0).getMessage().getMessageAge());	
+					Hashtable<Integer, Double> averageE2EDelays = new Hashtable<Integer, Double>();
+					Hashtable<Integer, Double> worstE2EDelays = new Hashtable<Integer, Double>();
+//					for (Integer k : c.scheduler.e2eDelays.keySet()) {
+					for (Integer k : c.scheduler.startingTimes.keySet()) {
+						double avg = 0;
+//						for (Double e2e : c.scheduler.e2eDelays.get(k)) {
+//							avg += e2e;
+//							if (!worstE2EDelays.containsKey(k) || worstE2EDelays.get(k) < e2e) {
+//								worstE2EDelays.put(k, e2e);
+//							}
+//						}
+						
+
+//						for (int j=0; j<c.scheduler.startingTimes.get(k).size(); j++) {
+//							double e2e = c.scheduler.finishingTimes.get(k).get(j) - c.scheduler.startingTimes.get(k).get(j);
+//							if (c.scheduler.startingTimes.get(k).get(j) < minStartTime) {
+//								minStartTime = c.scheduler.startingTimes.get(k).get(j);
+//							}
+//							if (c.scheduler.finishingTimes.get(k).get(j) > maxFinishTime) {
+//								maxFinishTime = c.scheduler.finishingTimes.get(k).get(j);
+//							}
+//							
+//							avg += e2e;
+//							
+//						}
+						
+		
+//						if (!worstE2EDelays.containsKey(k) || worstE2EDelays.get(k) < maxFinishTime - minStartTime) {
+//							worstE2EDelays.put(k, maxFinishTime - minStartTime);
+//						}
+		
+						double worstE2E = Double.MIN_VALUE;
+
+						int i=0;
+						int numTasks = -1;
+						for (Integer pc : c.scheduler.startingTimes.get(k).keySet()) {
+
+							if (i==0) {
+								numTasks = c.scheduler.startingTimes.get(k).get(pc).size();
+							}
+							
+							if (c.scheduler.finishingTimes.get(k).get(pc).size() == numTasks) {
+								double maxFinishTime = Double.MIN_VALUE;
+								double minStartTime = Double.MAX_VALUE;
+								
+								for (Double st : c.scheduler.startingTimes.get(k).get(pc)) {
+									if (st < minStartTime) {
+										minStartTime = st;
+									}
+								}
+								
+								for (Double ft : c.scheduler.finishingTimes.get(k).get(pc)) {
+									if (ft > maxFinishTime) {
+										maxFinishTime = ft;
+									}
+								}
+								
+								double e2e = maxFinishTime - minStartTime;
+								avg += e2e;
+								
+								if (e2e > worstE2E) {
+									worstE2E = e2e;
+								}	
+							}
+							
+							i++;
+						}
+						
+						avg = avg/(double)c.scheduler.startingTimes.get(k).size();
+//						averageE2EDelays.put(k, avg);
+						builder.append("<br/><b>End to end delay SWC" + k + " (average): </b>" + avg); 
+						builder.append("<br/><b>End to end delay SWC" + k + " (worst): </b>" + worstE2E);
 					}
+					builder.append("<br/><b>Intra ECU Bus: </b>" + e.bus.delay);
+					builder.append("<br/><b>Inter ECU Bus: </b>" + arc.bus.delay);
+//					if (c.scheduler.tasks.get(0).getMessage() != null) {
+//						builder.append("<br/><b>Message age: </b>" + c.scheduler.tasks.get(0).getMessage().getMessageAge());	
+//					}
 					pw.print(builder.toString());
 					fw.close();
 					builder = new StringBuilder();
@@ -232,8 +302,226 @@ public class Util {
 		
 	}
 	
-	public static void parseInputFile() {
+	public static Architecture parseInputFile(String _path) {
+		Architecture a = new Architecture();
 		
+		try {
+			File inputFile = new File(_path);
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			Document doc = builder.parse(inputFile);
+			
+			doc.getDocumentElement().normalize();
+			System.out.println("Root element: " + doc.getDocumentElement().getNodeName());
+			
+			NodeList mappingNodeList = doc.getElementsByTagName("Architecture");
+			Node architectureNode = mappingNodeList.item(0);
+			
+			NodeList architectureChildren = architectureNode.getChildNodes();
+			Node ecusNode = null;
+			Node interecubusNode = null;
+			Node swcomponentsNode = null;
+			for (int i=0; i < architectureChildren.getLength(); i++) {
+				if (architectureChildren.item(i).getNodeName().equalsIgnoreCase("ECUs")) {
+					ecusNode = architectureChildren.item(i);
+				} else if (architectureChildren.item(i).getNodeName().equalsIgnoreCase("InterECUBus")) {
+					interecubusNode = architectureChildren.item(i);
+				} else if (architectureChildren.item(i).getNodeName().equalsIgnoreCase("SWComponents")) {
+					swcomponentsNode = architectureChildren.item(i);
+				}
+			}
+			
+			Hashtable<Integer, Runnable> runnablesHT = new Hashtable<Integer, Runnable>();
+			if (swcomponentsNode != null) {
+				NodeList swcomponentsChilden = swcomponentsNode.getChildNodes();
+				for (int i=0; i<swcomponentsChilden.getLength(); i++) {
+					Node swcomponentNode = swcomponentsChilden.item(i);
+					if (swcomponentNode.getNodeType() == 1) {
+						Integer _cid = Integer.valueOf(swcomponentNode.getAttributes().getNamedItem("id").getNodeValue());
+						String _cname = swcomponentNode.getAttributes().getNamedItem("name").getNodeValue();
+						SWComponent _component = new SWComponent(_cid, _cname);
+						Node runnablesNode = null;
+						NodeList swcomponentChildren = swcomponentNode.getChildNodes();
+						for (int j=0; j<swcomponentChildren.getLength(); j++) {
+							if (swcomponentChildren.item(j).getNodeName().equalsIgnoreCase("Runnables")) {
+								runnablesNode = swcomponentChildren.item(j);
+							}
+						}
+						
+						if (runnablesNode != null) {
+							NodeList runnablesChilden = runnablesNode.getChildNodes();
+							for (int j=0; j<runnablesChilden.getLength(); j++) {
+								Node runnableNode = runnablesChilden.item(j);
+								if (runnableNode.getNodeType() == 1) {
+									Integer _rid = Integer.valueOf(runnableNode.getAttributes().getNamedItem("id").getNodeValue());
+									String _rname = runnableNode.getAttributes().getNamedItem("name").getNodeValue();
+									Integer _rmsg = Integer.valueOf(runnableNode.getAttributes().getNamedItem("messageSize").getNodeValue());
+									Integer _rmpr = Integer.valueOf(runnableNode.getAttributes().getNamedItem("messagePriority").getNodeValue());
+									Boolean _rmxt = Boolean.valueOf(runnableNode.getAttributes().getNamedItem("messageExtendedIdentifier").getNodeValue());
+									Integer _dst = Integer.valueOf(runnableNode.getAttributes().getNamedItem("dst").getNodeValue());
+									Double _rbcet = Double.valueOf(runnableNode.getAttributes().getNamedItem("bcet").getNodeValue());
+									Double _rwcet = Double.valueOf(runnableNode.getAttributes().getNamedItem("wcet").getNodeValue());
+									Runnable r = new Runnable(_rid, _rname, _rbcet, _rwcet, _rmsg, _rmpr, _dst, _rmxt);
+									_component.addRunnable(r);
+									runnablesHT.put(_rid, r);
+								}
+							}
+							a.addSWComponent(_component);
+						}
+						
+					}
+					
+				}
+				
+			}
+			
+			Hashtable<Integer, ECU> ecusHT = new Hashtable<Integer, ECU>();
+			if (ecusNode != null) {
+				NodeList ecusChildren = ecusNode.getChildNodes();
+				for (int i=0; i<ecusChildren.getLength(); i++) {
+					Node ecuNode = ecusChildren.item(i);
+					if (ecuNode.getNodeType() == 1) {
+						Integer _eid = Integer.valueOf(ecuNode.getAttributes().getNamedItem("id").getNodeValue());
+						Double _processorSpeed = Double.valueOf(ecuNode.getAttributes().getNamedItem("processorSpeed").getNodeValue());
+						ECU e = new ECU(_eid, _processorSpeed, a);
+						NodeList ecuChildren = ecuNode.getChildNodes();
+						Node coresNode = null;
+						Node intraECUBusNode = null;
+						for (int j=0; j<ecuChildren.getLength(); j++) {
+							if (ecuChildren.item(j).getNodeName().equalsIgnoreCase("Cores")) {
+								coresNode = ecuChildren.item(j);
+							} else if (ecuChildren.item(j).getNodeName().equalsIgnoreCase("IntraECUBus")) {
+								intraECUBusNode = ecuChildren.item(j);
+							}
+						}
+						
+						Hashtable<Integer, Core> coresHT = new Hashtable<Integer, Core>();
+						if (coresNode != null) {
+							NodeList coresChildren = coresNode.getChildNodes();
+							for (int j=0; j<coresChildren.getLength(); j++) {
+								Node coreNode = coresChildren.item(j);
+								if (coreNode.getNodeType() == 1) {
+									Integer _cid = Integer.valueOf(coreNode.getAttributes().getNamedItem("id").getNodeValue());
+									Core c = new Core(_cid, e);
+									NodeList coreChildren = coreNode.getChildNodes();
+									
+									Node _osTasksNode = null;
+									Node _swComponentsNode = null;
+									
+									for (int k=0; k<coreChildren.getLength(); k++) {
+										System.out.println("Name: " + coreChildren.item(k).getNodeName());
+										if (coreChildren.item(k).getNodeName().equalsIgnoreCase("SWComponents")) {
+											_swComponentsNode = coreChildren.item(k);
+										} else if (coreChildren.item(k).getNodeName().equalsIgnoreCase("OsTasks")) {
+											_osTasksNode = coreChildren.item(k);
+										}
+									}
+									
+									if (_osTasksNode != null) {
+										NodeList osTasksChildren = _osTasksNode.getChildNodes();
+										for (int l=0; l<osTasksChildren.getLength(); l++) {
+											Node osTaskNode = osTasksChildren.item(l);
+											if (osTaskNode.getNodeType() == 1) {
+												Integer _otid = Integer.valueOf(osTaskNode.getAttributes().getNamedItem("id").getNodeValue());
+												Integer _otperiod = Integer.valueOf(osTaskNode.getAttributes().getNamedItem("period").getNodeValue());
+												OsTask _osTask = new OsTask(_otid, _otperiod, c);
+												NodeList osTaskChildren = osTaskNode.getChildNodes();
+												List<Runnable> _taskRunnables = new ArrayList<Runnable>();
+												for (int m=0; m<osTaskChildren.getLength(); m++) {
+													Node runnablesNode = osTaskChildren.item(m);
+													if (runnablesNode.getNodeType() == 1) {
+														NodeList runnablesChildren = runnablesNode.getChildNodes();
+														for (int n=0; n<runnablesChildren.getLength(); n++) {
+															Node runnableNode = runnablesChildren.item(n);
+															if (runnableNode.getNodeType() == 1) {
+																Integer _rid = Integer.valueOf(runnableNode.getAttributes().getNamedItem("id").getNodeValue());
+																Runnable r = runnablesHT.get(_rid);
+																_taskRunnables.add(r);
+																_osTask.addRunnable(r);
+															}
+														}
+													}
+												}
+												c.scheduler.addOsTask(_osTask);
+											}
+										}	
+									}
+									
+									if (_swComponentsNode != null) {
+										NodeList swComponentsChildren = _swComponentsNode.getChildNodes();
+										for (int l=0; l<swComponentsChildren.getLength(); l++) {
+											Node swComponentNode = swComponentsChildren.item(l);
+											if (swComponentNode.getNodeType() == 1) {
+												Integer _swcid = Integer.valueOf(swComponentNode.getAttributes().getNamedItem("id").getNodeValue());
+												c.scheduler.addSWComponentId(_swcid);	
+											}
+										}
+									}
+									
+									coresHT.put(_cid, c);
+									e.addCore(c);
+								}
+							}
+						}
+						
+						if (intraECUBusNode != null) {
+							Integer _iebbw = Integer.valueOf(intraECUBusNode.getAttributes().getNamedItem("bandwidth").getNodeValue());
+							IntraECUBus ieBus = new IntraECUBus(_iebbw);
+							NodeList intraECUBusChildren = intraECUBusNode.getChildNodes();
+							for (int j=0; j<intraECUBusChildren.getLength(); j++) {
+								Node _iebcoresNode = intraECUBusChildren.item(j);
+								if (_iebcoresNode.getNodeType() == 1) {
+									NodeList _iebecusChildren = _iebcoresNode.getChildNodes();
+									for (int k=0; k<_iebecusChildren.getLength(); k++) {
+										Node _iebcoreNode = _iebecusChildren.item(k);
+										if (_iebcoreNode.getNodeType() == 1) {
+											Integer _iebcid = Integer.valueOf(_iebcoreNode.getAttributes().getNamedItem("id").getNodeValue());
+											Core _iebcore = coresHT.get(_iebcid);
+											ieBus.cores.add(_iebcore);
+										}
+									}
+								}
+							}
+							
+							e.setBus(ieBus);
+							
+						}
+						
+						a.addECU(e);
+						ecusHT.put(e.id, e);
+					}
+					
+				}
+			}
+				
+			// Parse InterECUBus
+			if (interecubusNode != null) {
+				Integer _iebbw = Integer.valueOf(interecubusNode.getAttributes().getNamedItem("bandwidth").getNodeValue());
+				InterECUBus ieBus = new InterECUBus(_iebbw);
+				NodeList interecubusChildren = interecubusNode.getChildNodes();
+				for (int i=0; i<interecubusChildren.getLength(); i++) {
+					Node _iebecusNode = interecubusChildren.item(i);
+					if (_iebecusNode.getNodeType() == 1) {
+						NodeList _iebecusChildren = _iebecusNode.getChildNodes();
+						for (int j=0; j<_iebecusChildren.getLength(); j++) {
+							Node _iebecuNode = _iebecusChildren.item(j);
+							if (_iebecuNode.getNodeType() == 1) {
+								Integer _iebecuid = Integer.valueOf(_iebecuNode.getAttributes().getNamedItem("id").getNodeValue());
+								ECU e = ecusHT.get(_iebecuid);
+								ieBus.addECU(e);	
+							}
+						}
+					}
+				}
+				a.setInterECUBus(ieBus);
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	
+		return a;
 	}
+	
 	
 }
