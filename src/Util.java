@@ -157,79 +157,6 @@ public class Util {
 					StringBuilder builder = new StringBuilder();
 					builder.append("<html><body><u><b>General Stats</b></u><br/><br/>");
 					builder.append("<b>CPU load: </b>" + (100.0-Double.valueOf(c.scheduler.data.get("idle"))) + "%");
-					Hashtable<Integer, Double> averageE2EDelays = new Hashtable<Integer, Double>();
-					Hashtable<Integer, Double> worstE2EDelays = new Hashtable<Integer, Double>();
-//					for (Integer k : c.scheduler.e2eDelays.keySet()) {
-					for (Integer k : c.scheduler.startingTimes.keySet()) {
-						double avg = 0;
-//						for (Double e2e : c.scheduler.e2eDelays.get(k)) {
-//							avg += e2e;
-//							if (!worstE2EDelays.containsKey(k) || worstE2EDelays.get(k) < e2e) {
-//								worstE2EDelays.put(k, e2e);
-//							}
-//						}
-						
-
-//						for (int j=0; j<c.scheduler.startingTimes.get(k).size(); j++) {
-//							double e2e = c.scheduler.finishingTimes.get(k).get(j) - c.scheduler.startingTimes.get(k).get(j);
-//							if (c.scheduler.startingTimes.get(k).get(j) < minStartTime) {
-//								minStartTime = c.scheduler.startingTimes.get(k).get(j);
-//							}
-//							if (c.scheduler.finishingTimes.get(k).get(j) > maxFinishTime) {
-//								maxFinishTime = c.scheduler.finishingTimes.get(k).get(j);
-//							}
-//							
-//							avg += e2e;
-//							
-//						}
-						
-		
-//						if (!worstE2EDelays.containsKey(k) || worstE2EDelays.get(k) < maxFinishTime - minStartTime) {
-//							worstE2EDelays.put(k, maxFinishTime - minStartTime);
-//						}
-		
-						double worstE2E = Double.MIN_VALUE;
-
-						int i=0;
-						int numTasks = -1;
-						for (Integer pc : c.scheduler.startingTimes.get(k).keySet()) {
-
-							if (i==0) {
-								numTasks = c.scheduler.startingTimes.get(k).get(pc).size();
-							}
-							
-							if (c.scheduler.finishingTimes.get(k).get(pc).size() == numTasks) {
-								double maxFinishTime = Double.MIN_VALUE;
-								double minStartTime = Double.MAX_VALUE;
-								
-								for (Double st : c.scheduler.startingTimes.get(k).get(pc)) {
-									if (st < minStartTime) {
-										minStartTime = st;
-									}
-								}
-								
-								for (Double ft : c.scheduler.finishingTimes.get(k).get(pc)) {
-									if (ft > maxFinishTime) {
-										maxFinishTime = ft;
-									}
-								}
-								
-								double e2e = maxFinishTime - minStartTime;
-								avg += e2e;
-								
-								if (e2e > worstE2E) {
-									worstE2E = e2e;
-								}	
-							}
-							
-							i++;
-						}
-						
-						avg = avg/(double)c.scheduler.startingTimes.get(k).size();
-//						averageE2EDelays.put(k, avg);
-						builder.append("<br/><b>End to end delay SWC" + k + " (average): </b>" + avg); 
-						builder.append("<br/><b>End to end delay SWC" + k + " (worst): </b>" + worstE2E);
-					}
 					builder.append("<br/><b>Intra ECU Bus: </b>" + e.bus.delay);
 					builder.append("<br/><b>Inter ECU Bus: </b>" + arc.bus.delay);
 //					if (c.scheduler.tasks.get(0).getMessage() != null) {
@@ -264,6 +191,102 @@ public class Util {
 					fw.close();		
 				}
 			}
+			
+			String _e2ePath = "io/output/e2e";
+			File _e2eDir = new File(_e2ePath);
+			
+			if (!_e2eDir.exists()) {
+				delete(_e2eDir);
+			}
+			
+			_e2eDir.mkdir();
+			
+			File _e2eFile = new File(_e2ePath + "/e2e.html");
+			FileWriter fw = new FileWriter(_e2eFile, false);
+			PrintWriter pw = new PrintWriter(fw);
+			StringBuilder builder = new StringBuilder();
+						
+			Hashtable<Integer, Double> averageE2EDelays = new Hashtable<Integer, Double>();
+			Hashtable<Integer, Double> worstE2EDelays = new Hashtable<Integer, Double>();
+//			for (Integer k : c.scheduler.e2eDelays.keySet()) {
+			
+			builder.append("<html><body>");
+			for (Integer k : arc.startingTimes.keySet()) {
+				double avg = 0;
+//				for (Double e2e : c.scheduler.e2eDelays.get(k)) {
+//					avg += e2e;
+//					if (!worstE2EDelays.containsKey(k) || worstE2EDelays.get(k) < e2e) {
+//						worstE2EDelays.put(k, e2e);
+//					}
+//				}
+				
+
+//				for (int j=0; j<c.scheduler.startingTimes.get(k).size(); j++) {
+//					double e2e = c.scheduler.finishingTimes.get(k).get(j) - c.scheduler.startingTimes.get(k).get(j);
+//					if (c.scheduler.startingTimes.get(k).get(j) < minStartTime) {
+//						minStartTime = c.scheduler.startingTimes.get(k).get(j);
+//					}
+//					if (c.scheduler.finishingTimes.get(k).get(j) > maxFinishTime) {
+//						maxFinishTime = c.scheduler.finishingTimes.get(k).get(j);
+//					}
+//					
+//					avg += e2e;
+//					
+//				}
+				
+
+//				if (!worstE2EDelays.containsKey(k) || worstE2EDelays.get(k) < maxFinishTime - minStartTime) {
+//					worstE2EDelays.put(k, maxFinishTime - minStartTime);
+//				}
+
+				double worstE2E = Double.MIN_VALUE;
+
+				int i=0;
+				int numTasks = -1;
+				for (Integer pc : arc.startingTimes.get(k).keySet()) {
+
+					if (i==0) {
+						numTasks = arc.startingTimes.get(k).get(pc).size();
+					}
+					
+					if (arc.finishingTimes.get(k).get(pc).size() == numTasks) {
+						double maxFinishTime = Double.MIN_VALUE;
+						double minStartTime = Double.MAX_VALUE;
+						
+						for (Double st : arc.startingTimes.get(k).get(pc)) {
+							if (st < minStartTime) {
+								minStartTime = st;
+							}
+						}
+						
+						for (Double ft : arc.finishingTimes.get(k).get(pc)) {
+							if (ft > maxFinishTime) {
+								maxFinishTime = ft;
+							}
+						}
+						
+						double e2e = maxFinishTime - minStartTime;
+						avg += e2e;
+						
+						if (e2e > worstE2E) {
+							worstE2E = e2e;
+						}	
+					}
+					
+					i++;
+				}
+				
+				avg = avg/(double)arc.startingTimes.get(k).size();
+//				averageE2EDelays.put(k, avg);
+				builder.append("<br/><b>End to end delay SWC" + k + " (average): </b>" + avg); 
+				builder.append("<br/><b>End to end delay SWC" + k + " (worst): </b>" + worstE2E);
+			}
+			builder.append("</body></html>");
+			
+			pw.print(builder.toString());
+			pw.close();
+			fw.close();	
+			
 			
 		} catch (Exception e) {
 			e.printStackTrace();

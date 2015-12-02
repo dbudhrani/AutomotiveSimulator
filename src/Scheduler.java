@@ -22,8 +22,6 @@ public class Scheduler {
 	public double idleTimeFinish = 0;
 	
 	public Hashtable<Integer, List<OsTask>> htSWCOsTasks;
-	public Hashtable<Integer, Hashtable<Integer, List<Double>>> startingTimes;
-	public Hashtable<Integer, Hashtable<Integer, List<Double>>> finishingTimes;
 	public Hashtable<Integer, List<Double>> e2eDelays;
 
 	public List<Integer> swComponentIds;
@@ -39,8 +37,6 @@ public class Scheduler {
 		this.timer = 0;
 		this.core = _core;
 		this.htSWCOsTasks = new Hashtable<Integer, List<OsTask>>();
-		this.startingTimes = new Hashtable<Integer, Hashtable<Integer, List<Double>>>();
-		this.finishingTimes = new Hashtable<Integer, Hashtable<Integer, List<Double>>>();
 		this.e2eDelays = new Hashtable<Integer, List<Double>>();
 		this.swComponentIds = new ArrayList<Integer>();
 	}
@@ -51,7 +47,6 @@ public class Scheduler {
 	
 	public void init() {
 		loadSWComponentsOsTasks();
-		initStartFinishTimes();
 		for (int i=0; i<tasks.size(); i++) {
 //			tasks.get(i).state = OsTaskState.READY;
 //			events.add(new Event(tasks.get(i).id, tasks.get(i).period, EventType.NEW_PERIOD_START));
@@ -209,8 +204,8 @@ public class Scheduler {
 		
 		List<SWComponent> components = getSWComponentsFromCurrentTask();
 		for (SWComponent c : components) {
-			addStartTime(c, currentTask.periodCounter, nextPeriodStartOfTask - currentTask.period);
-			addFinishTime(c, currentTask.periodCounter, timer);
+			core.ecu.arc.addStartTime(c, currentTask.periodCounter, nextPeriodStartOfTask - currentTask.period);
+			core.ecu.arc.addFinishTime(c, currentTask.periodCounter, timer);
 		}
 		
 		if (timer < nextPeriodStartOfTask) {
@@ -416,20 +411,6 @@ public class Scheduler {
 		return tmp;
 	}
 	
-	public void addStartTime(SWComponent _c, int _pc, double _t) {
-		if (this.startingTimes.get(_c.id).get(_pc) == null) {
-			this.startingTimes.get(_c.id).put(_pc, new ArrayList<Double>());
-		}
-		this.startingTimes.get(_c.id).get(_pc).add(_t);
-	}
-	
-	public void addFinishTime(SWComponent _c, int _pc, double _t) {
-		if (this.finishingTimes.get(_c.id).get(_pc) == null) {
-			this.finishingTimes.get(_c.id).put(_pc, new ArrayList<Double>());
-		}
-		this.finishingTimes.get(_c.id).get(_pc).add(_t);
-	}
-	
 	public void loadSWComponentsOsTasks() {
 		for (OsTask t : tasks) {
 			for (Runnable r1 : t.runnables) {
@@ -449,15 +430,6 @@ public class Scheduler {
 					}
 				}
 			}
-		}
-	}
-	
-	public void initStartFinishTimes() {
-		for (Integer k : htSWCOsTasks.keySet()) {
-			Hashtable<Integer, List<Double>> ht = new Hashtable<Integer, List<Double>>();
-			Hashtable<Integer, List<Double>> ht2 = new Hashtable<Integer, List<Double>>();
-			startingTimes.put(k, ht);
-			finishingTimes.put(k, ht2);
 		}
 	}
 	
