@@ -1,5 +1,3 @@
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.util.Random;
 
 
@@ -14,12 +12,13 @@ public class Runnable {
 	public int messageSize;
 	public int messagePriority;
 	public int messageDst;
+	public boolean messageExtendedIdentifier;
 	
 	public Runnable(String _name) {
 		this.name = _name;
 	}
 	
-	public Runnable(int _id, String _name, double _bcet, double _wcet, int _messageSize, int _messagePriority, int _messageDst) {
+	public Runnable(int _id, String _name, double _bcet, double _wcet, int _messageSize, int _messagePriority, int _messageDst, boolean _messageExtendedIdentifier) {
 		this.id = _id;
 		this.name = _name;
 		this.bcet = _bcet;
@@ -27,6 +26,7 @@ public class Runnable {
 		this.messageSize = _messageSize;
 		this.messagePriority = _messagePriority;
 		this.messageDst = _messageDst;
+		this.messageExtendedIdentifier = _messageExtendedIdentifier;
 	}
 	
 	public double computeExecTime() {

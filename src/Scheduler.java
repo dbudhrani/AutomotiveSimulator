@@ -181,7 +181,7 @@ public class Scheduler {
 	
 	public void coreReceivedMessage(Message _msg) {
 		if (isTaskSameCore(_msg.dst)) {
-			this.logs.add(new Log(_msg.dst, _msg.updTs, LogType.MESSAGE_RECEIVED, "Message source: task " + _msg.src, LogSeverity.NORMAL));			
+			this.logs.add(new Log(_msg.dst, _msg.updTs, LogType.MESSAGE_RECEIVED, "Message source: task " + _msg.src + ". Message age: " + Double.valueOf(_msg.updTs - _msg.ts).toString(), LogSeverity.NORMAL));			
 		}
 		core.inputMessages.remove(_msg);
 	}
@@ -372,11 +372,11 @@ public class Scheduler {
 					OsTask t = findTaskOfRunnable(r.messageDst);
 					if (!isTaskSameCore(t.id) && !_dstTasks.contains(t.id)) {
 						_dstTasks.add(t.id);
-						Message msg = currentTask.createMessage(timer, r.messagePriority, r.messageSize, t.id);
+						Message msg = currentTask.createMessage(timer, r.messagePriority, r.messageSize, t.id, r.messageExtendedIdentifier);
 						core.addMessageToOutputQueue(msg);
 					}	
 				} else {
-					Message msg = currentTask.createMessage(timer, r.messagePriority, r.messageSize, -1);
+					Message msg = currentTask.createMessage(timer, r.messagePriority, r.messageSize, -1, r.messageExtendedIdentifier);
 					core.addMessageToOutputQueue(msg);
 				}
 			}

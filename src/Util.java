@@ -307,10 +307,11 @@ public class Util {
 									String _rname = runnableNode.getAttributes().getNamedItem("name").getNodeValue();
 									Integer _rmsg = Integer.valueOf(runnableNode.getAttributes().getNamedItem("messageSize").getNodeValue());
 									Integer _rmpr = Integer.valueOf(runnableNode.getAttributes().getNamedItem("messagePriority").getNodeValue());
+									Boolean _rmxt = Boolean.valueOf(runnableNode.getAttributes().getNamedItem("messageExtendedIdentifier").getNodeValue());
 									Integer _dst = Integer.valueOf(runnableNode.getAttributes().getNamedItem("dst").getNodeValue());
 									Double _rbcet = Double.valueOf(runnableNode.getAttributes().getNamedItem("bcet").getNodeValue());
 									Double _rwcet = Double.valueOf(runnableNode.getAttributes().getNamedItem("wcet").getNodeValue());
-									Runnable r = new Runnable(_rid, _rname, _rbcet, _rwcet, _rmsg, _rmpr, _dst);
+									Runnable r = new Runnable(_rid, _rname, _rbcet, _rwcet, _rmsg, _rmpr, _dst, _rmxt);
 									_component.addRunnable(r);
 									runnablesHT.put(_rid, r);
 								}
