@@ -20,7 +20,6 @@ public class IntraECUBus {
 	}
 
 	public void broadcastMessage(Message _msg) {
-		isBusy = true;
 		selectMessage();
 		computeDelay(_msg);
 		_msg.updateTimestamp(this.delay);
@@ -34,6 +33,7 @@ public class IntraECUBus {
 	
 	public void selectMessage() {
 		if (!isBusy) {
+			isBusy = true;
 			List<Message> msgs = new ArrayList<Message>();
 			for (Core c : cores) {
 				if (c.outputMessages.size() > 0) {

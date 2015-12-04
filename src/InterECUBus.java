@@ -20,7 +20,6 @@ public class InterECUBus {
 	}
 
 	public void broadcastMessage(Message _msg) {
-		isBusy = true;
 		selectMessage();
 		computeDelay(_msg);
 		_msg.updateTimestamp(this.delay);
@@ -30,11 +29,11 @@ public class InterECUBus {
 				e.checkInputMessage(_msg);
 			}
 		}
-		isBusy = false;
 	}
 	
 	public void selectMessage() {
 		if (!isBusy) {
+			isBusy = true;
 			List<Message> msgs = new ArrayList<Message>();
 			for (ECU e : ecus) {
 				if (e.outputMessages.size() > 0) {
@@ -45,6 +44,7 @@ public class InterECUBus {
 				Collections.sort(msgs);
 				broadcastMessage(msgs.get(0));	
 			}
+			isBusy = false;
 		}
 	}
 	

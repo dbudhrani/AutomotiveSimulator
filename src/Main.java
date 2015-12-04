@@ -1,7 +1,7 @@
 
 public class Main {
 
-	public static String ARCHITECTURE_PATH = "io/input/architecture1_old.xml";
+	public static String ARCHITECTURE_PATH = "io/input/architecture4.xml";
 	
 	public Main() {}
 
