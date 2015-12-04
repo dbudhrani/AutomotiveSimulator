@@ -10,7 +10,7 @@ public class Main {
     	Architecture a = Util.parseInputFile(ARCHITECTURE_PATH);
 		a.execute(1000);
 		
-		Util.printLog(a);
+		Util.printLog(a, ARCHITECTURE_PATH);
 		
 	}
 

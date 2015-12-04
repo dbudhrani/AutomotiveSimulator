@@ -19,11 +19,11 @@ public class Util {
 
 	public Util() {}
 	
-	public static void printLog(Architecture arc) {
+	public static void printLog(Architecture arc, String architecturePath) {
 		try {
 
-			int root_architecture_name_levels = Main.ARCHITECTURE_PATH.split("/").length;
-			String root_architecture_name_full = Main.ARCHITECTURE_PATH.split("/")[root_architecture_name_levels-1];
+			int root_architecture_name_levels = architecturePath.split("/").length;
+			String root_architecture_name_full = architecturePath.split("/")[root_architecture_name_levels-1];
 			String root_architecture_name = root_architecture_name_full.split("\\.")[0];
 			
 			String _logPath = "io/output/" + root_architecture_name + "/log";
