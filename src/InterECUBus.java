@@ -13,11 +13,9 @@ public class InterECUBus {
 	public InterECUBus(int _bandwith) {
 		this.bandwith = _bandwith;
 		this.isBusy = false;
-//		this.ecus = new ArrayList<ECU>();
 	}
 
 	public void computeDelay(Message _msg) {
-		// connect this delay with the delay of the SW component
 		this.delay = ((_msg.extendedIdentifier ? 80 : 55) + 10*_msg.size)/(double)bandwith;
 	}
 
@@ -49,10 +47,6 @@ public class InterECUBus {
 			}
 		}
 	}
-
-//	public void addECU(ECU e) {
-//		this.ecus.add(e);
-//	}
 	
 	public void setECUs(List<ECU> _ecus) {
 		this.ecus = _ecus;

@@ -11,21 +11,22 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 
 public class Util {
 
-	public Util() {
-
-	}
+	public Util() {}
 	
 	public static void printLog(Architecture arc) {
 		try {
 
-			String _logPath = "io/output/log";
+			int root_architecture_name_levels = Main.ARCHITECTURE_PATH.split("/").length;
+			String root_architecture_name_full = Main.ARCHITECTURE_PATH.split("/")[root_architecture_name_levels-1];
+			String root_architecture_name = root_architecture_name_full.split("\\.")[0];
+			
+			String _logPath = "io/output/" + root_architecture_name + "/log";
 			File _logDir = new File(_logPath);
 			
 			if (_logDir.exists()) {
@@ -35,14 +36,12 @@ public class Util {
 			_logDir.mkdir();
 			
 			for (ECU e : arc.getECUs()) {
-				String _ecuPath = "io/output/log/ecu" + e.id;
-				File _ecuDir = new File(_ecuPath);
-				_ecuDir.mkdir();
+				String _ecuPath = _logPath + "/ecu" + e.id;
 				for (Core c : e.cores) {
 					Collections.sort(c.scheduler.logs);
 					String _corePath = _ecuPath + "/core" + c.id;
 					File _coreDir = new File(_corePath);
-					_coreDir.mkdir();
+					_coreDir.mkdirs();
 					File _eventsFile = new File(_corePath + "/events.html");
 					File _statsFile = new File(_corePath + "/stats.html");
 					FileWriter fw = new FileWriter(_statsFile, false);
@@ -82,7 +81,7 @@ public class Util {
 				}
 			}
 			
-			String _e2ePath = "io/output/e2e";
+			String _e2ePath = "io/output/" + root_architecture_name + "/e2e";
 			File _e2eDir = new File(_e2ePath);
 			
 			if (!_e2eDir.exists()) {
@@ -95,46 +94,15 @@ public class Util {
 			FileWriter fw = new FileWriter(_e2eFile, false);
 			PrintWriter pw = new PrintWriter(fw);
 			StringBuilder builder = new StringBuilder();
-						
-			Hashtable<Integer, Double> averageE2EDelays = new Hashtable<Integer, Double>();
-			Hashtable<Integer, Double> worstE2EDelays = new Hashtable<Integer, Double>();
-//			for (Integer k : c.scheduler.e2eDelays.keySet()) {
 			
 			builder.append("<html><body>");
 			for (Integer k : arc.startingTimes.keySet()) {
 				double avg = 0;
-//				for (Double e2e : c.scheduler.e2eDelays.get(k)) {
-//					avg += e2e;
-//					if (!worstE2EDelays.containsKey(k) || worstE2EDelays.get(k) < e2e) {
-//						worstE2EDelays.put(k, e2e);
-//					}
-//				}
-				
-
-//				for (int j=0; j<c.scheduler.startingTimes.get(k).size(); j++) {
-//					double e2e = c.scheduler.finishingTimes.get(k).get(j) - c.scheduler.startingTimes.get(k).get(j);
-//					if (c.scheduler.startingTimes.get(k).get(j) < minStartTime) {
-//						minStartTime = c.scheduler.startingTimes.get(k).get(j);
-//					}
-//					if (c.scheduler.finishingTimes.get(k).get(j) > maxFinishTime) {
-//						maxFinishTime = c.scheduler.finishingTimes.get(k).get(j);
-//					}
-//					
-//					avg += e2e;
-//					
-//				}
-				
-
-//				if (!worstE2EDelays.containsKey(k) || worstE2EDelays.get(k) < maxFinishTime - minStartTime) {
-//					worstE2EDelays.put(k, maxFinishTime - minStartTime);
-//				}
-
 				double worstE2E = Double.MIN_VALUE;
-
 				int i=0;
 				int numTasks = -1;
+				
 				for (Integer pc : arc.startingTimes.get(k).keySet()) {
-
 					if (i==0) {
 						numTasks = arc.startingTimes.get(k).get(pc).size();
 					}
@@ -167,7 +135,6 @@ public class Util {
 				}
 				
 				avg = avg/(double)arc.startingTimes.get(k).size();
-//				averageE2EDelays.put(k, avg);
 				builder.append("<br/><b>End to end delay SWC" + k + " (average): </b>" + avg); 
 				builder.append("<br/><b>End to end delay SWC" + k + " (worst): </b>" + worstE2E);
 			}
@@ -193,7 +160,6 @@ public class Util {
 			try {
 				if (_file.list().length == 0) {
 					_file.delete();
-					System.out.println("Directory deleted: " + _file.getAbsolutePath());
 				} else {
 					String files[] = _file.list();
 					for (String tmp : files) {
@@ -202,7 +168,6 @@ public class Util {
 					}
 					if (_file.list().length == 0) {
 						_file.delete();
-						System.out.println("Directory deleted: " + _file.getAbsolutePath());
 					}
 				}
 			} catch (Exception e) {
@@ -210,7 +175,6 @@ public class Util {
 			}
 		} else {
 			_file.delete();
-			System.out.println("File deleted: " + _file.getAbsolutePath());
 		}
 		
 	}
@@ -223,9 +187,7 @@ public class Util {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.parse(inputFile);
-			
 			doc.getDocumentElement().normalize();
-			System.out.println("Root element: " + doc.getDocumentElement().getNodeName());
 			
 			NodeList mappingNodeList = doc.getElementsByTagName("Architecture");
 			Node architectureNode = mappingNodeList.item(0);
@@ -322,7 +284,6 @@ public class Util {
 									Node _swComponentsNode = null;
 									
 									for (int k=0; k<coreChildren.getLength(); k++) {
-										System.out.println("Name: " + coreChildren.item(k).getNodeName());
 										if (coreChildren.item(k).getNodeName().equalsIgnoreCase("SWComponents")) {
 											_swComponentsNode = coreChildren.item(k);
 										} else if (coreChildren.item(k).getNodeName().equalsIgnoreCase("OsTasks")) {
@@ -391,18 +352,15 @@ public class Util {
 										if (_iebcoreNode.getNodeType() == 1) {
 											Integer _iebcid = Integer.valueOf(_iebcoreNode.getAttributes().getNamedItem("id").getNodeValue());
 											Core _iebcore = coresHT.get(_iebcid);
-//											ieBus.cores.add(_iebcore);
 											_cores.add(_iebcore);
 										}
 									}
 									ieBus.setCores(_cores);
 								}
 							}
-							
 							e.setBus(ieBus);
 							
 						}
-						
 						a.addECU(e);
 						ecusHT.put(e.id, e);
 					}
@@ -410,7 +368,6 @@ public class Util {
 				}
 			}
 				
-			// Parse InterECUBus
 			if (interecubusNode != null) {
 				Integer _iebbw = Integer.valueOf(interecubusNode.getAttributes().getNamedItem("bandwidth").getNodeValue());
 				InterECUBus ieBus = new InterECUBus(_iebbw);
@@ -425,7 +382,6 @@ public class Util {
 							if (_iebecuNode.getNodeType() == 1) {
 								Integer _iebecuid = Integer.valueOf(_iebecuNode.getAttributes().getNamedItem("id").getNodeValue());
 								ECU e = ecusHT.get(_iebecuid);
-//								ieBus.addECU(e);	
 								ecus.add(e);
 							}
 						}
@@ -441,6 +397,5 @@ public class Util {
 	
 		return a;
 	}
-	
 	
 }

@@ -13,11 +13,9 @@ public class IntraECUBus {
 	public IntraECUBus(int _bandwith) {
 		this.bandwith = _bandwith;
 		this.isBusy = false;
-//		this.cores = new ArrayList<Core>();
 	}
 	
 	public void computeDelay(Message _msg) {
-		// connect this delay with the delay of the SW component
 		this.delay = ((_msg.extendedIdentifier ? 80 : 55) + 10*_msg.size)/(double)bandwith;
 	}
 
@@ -28,9 +26,6 @@ public class IntraECUBus {
 		_msg.updateTimestamp(this.delay);
 		for (Core c : cores) {
 			if (!c.scheduler.isTaskSameCore(_msg.src)) {
-//				c.scheduler.logs.add(new Log(-1, c.scheduler.timer, LogType.MESSAGE_SENT, LogSeverity.NORMAL));
-//				c.inputMessages.add(_msg);
-//				c.scheduler.logs.add(new Log(-1, c.scheduler.timer + this.delay, LogType.MESSAGE_RECEIVED, LogSeverity.NORMAL));
 				c.checkInputMessages(_msg);	
 			}
 		}

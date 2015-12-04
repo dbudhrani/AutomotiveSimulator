@@ -10,7 +10,6 @@ public enum LogType {
 	START_IDLE,
 	FINISH_IDLE,
 	MESSAGE_SENT,
-//	MESSAGE_READ,
 	MESSAGE_RECEIVED
 	
 }

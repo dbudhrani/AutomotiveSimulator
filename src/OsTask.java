@@ -5,39 +5,25 @@ import java.util.List;
 public class OsTask implements Comparable<OsTask> {
 
 	public int id;
-	
 	public OsTaskState state;
-	
 	public double execTime;
 	public int period;
-	
 	public int nextPeriod;
-	public int periodCounter;
-	
-//	public double periodInit;
+	public int periodCounter;	
 	public double currentExecTime;
-	
 	public double priority;
-	
 	public List<Message> messages;
-	
-	
 	public Core core;
 	public List<Runnable> runnables;
-	
 	public boolean firstPeriodExecuted;
 	
-	public OsTask(Runnable _runnable) {
-		
-	}
+	public OsTask(Runnable _runnable) {}
 	
 	public OsTask(int _id, int _period, Core _core) {
 		this.id = _id;
-		//this.wcet = _wcet;
 		this.period = _period;
 		this.priority = 1/((double)_period);
 		this.state = OsTaskState.WAITING;
-//		this.periodInit = 0;
 		this.currentExecTime = 0;
 		this.core = _core;
 		this.runnables = new ArrayList<Runnable>();
@@ -49,11 +35,9 @@ public class OsTask implements Comparable<OsTask> {
 
 	@Override
 	public int compareTo(OsTask _task) {
- 
 		int stateInfluenceThis = this.state == OsTaskState.READY ? 1 : 0;
 		int stateInfluenceParam = _task.state == OsTaskState.READY ? 1 : 0;
 		
-		// order by period to avoid the double issue
 		return (int) (((double) ((_task.priority * stateInfluenceParam) - (this.priority * stateInfluenceThis)))*1000);
 	}
 	

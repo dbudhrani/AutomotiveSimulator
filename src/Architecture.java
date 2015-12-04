@@ -5,7 +5,6 @@ import java.util.List;
 
 public class Architecture {
 
-	static Mapping m;
 	public InterECUBus bus;
 	private List<SWComponent> components;
 	private List<ECU> ecus;

@@ -6,16 +6,11 @@ public class ECU {
 
 	public int id;
 	public List<SWComponent> components;
-	
 	public List<Message> inputMessages;
 	public List<Message> outputMessages;
-	
-	public List<Core> cores;
-	
+	public List<Core> cores;	
 	public IntraECUBus bus;
-
 	public Architecture arc;
-	
 	public double processorSpeed;
 	
 	public ECU(int _id) {

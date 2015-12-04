@@ -5,14 +5,9 @@ import java.util.List;
 public class Core {
 
 	public int id;
-	//public List<Runnable> runnables;
-
 	public List<Message> inputMessages;
 	public List<Message> outputMessages;
-	
-	//public List<OsTask> tasks;
 	public Scheduler scheduler;
-	
 	public OsTask currentTask;
 	public boolean isBusy;
 	public ECU ecu;
@@ -23,8 +18,6 @@ public class Core {
 	
 	public Core(int _id, ECU _ecu) {
 		this.id = _id;
-	//	this.runnables = new ArrayList<Runnable>();
-		//this.tasks = new ArrayList<OsTask>();
 		this.scheduler = new Scheduler(this);
 		this.inputMessages = new ArrayList<Message>();
 		this.outputMessages = new ArrayList<Message>();

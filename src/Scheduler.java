@@ -10,22 +10,16 @@ public class Scheduler {
 	public List<Event> events;
 	public List<Log> logs;
 	public Hashtable<String, String> data;
-	
 	public double maxTime;
-	
 	public double timer;
 	public double currentTaskRunningTimeStart;
 	public double currentTaskRunningTimeFinish;
-	
 	public double idleTime = 0;
 	public double idleTimeStart = 0;
 	public double idleTimeFinish = 0;
-	
 	public Hashtable<Integer, List<OsTask>> htSWCOsTasks;
 	public Hashtable<Integer, List<Double>> e2eDelays;
-
 	public List<Integer> swComponentIds;
-	
 	OsTask currentTask;
 	Core core;
 	
@@ -48,8 +42,6 @@ public class Scheduler {
 	public void init() {
 		loadSWComponentsOsTasks();
 		for (int i=0; i<tasks.size(); i++) {
-//			tasks.get(i).state = OsTaskState.READY;
-//			events.add(new Event(tasks.get(i).id, tasks.get(i).period, EventType.NEW_PERIOD_START));
 			events.add(new Event(tasks.get(i).id, 0, EventType.NEW_PERIOD_START));
 			setTaskToReady(tasks.get(i), false);
 		}
@@ -69,11 +61,9 @@ public class Scheduler {
 		while (timer < maxTime) {
 			if (currentTaskRunningTimeFinish <= events.get(0).time) {
 				taskFinished();
-//				checkNewPeriods();
 				if (tasks.get(0).state == OsTaskState.READY) {
 					setTaskToRunning(tasks.get(0));
 				} else {
-					// do stuff
 					logs.add(new Log(-1, timer, LogType.START_IDLE, "", LogSeverity.NORMAL));
 					idleTimeStart = timer;
 					runNextTask(true);
@@ -83,8 +73,7 @@ public class Scheduler {
 			}	
 		}
 
-		// print log
-		finishExecution();
+		data.put("idle", Double.valueOf(((double) idleTime/(double) maxTime)*100).toString());
 	}
 	
 	private int getNextPeriodStartOfTask(OsTask task) {
@@ -93,12 +82,11 @@ public class Scheduler {
 				return events.get(i).time;
 			}
 		}
-		// This should never happen
+
 		return -1;
 	}
 	
 	private void setNextPeriod(OsTask task) {
-		// change to list of events
 		for (int i=0; i<events.size(); i++) {
 			if (task.id == events.get(i).taskId && events.get(i).eventType == EventType.NEW_PERIOD_START) {
 				events.get(i).time += task.period;
@@ -153,22 +141,13 @@ public class Scheduler {
 			task.incrementPeriodCounter();
 		}
 		
-//		for (SWComponent c : Architecture.getSWComponents()) {
-//			addDelayToSWComponent(c);
-//		}
 		sortTasks();
 	}
 	
 	private void setTaskToRunning(OsTask task) {
 		currentTask = task;
-		currentTask.state = OsTaskState.RUNNING;
-		// TODO delete message from input queue
-		
-			addDelayToSWComponent();
-		
-		// TODO be careful, this should not be executed on preemption
+		currentTask.state = OsTaskState.RUNNING;		
 		if (currentTask.currentExecTime == 0) {
-//			takeMessagesFromQueue();
 			currentTask.computeTaskTime();	
 		}
 		currentTaskRunningTimeStart = timer;
@@ -189,20 +168,13 @@ public class Scheduler {
 	private void taskFinished() {
 		timer = currentTaskRunningTimeFinish;
 		currentTask.currentExecTime = currentTask.execTime;
-//		currentTask.createMessage(timer);
-//		if (!isTaskSameCore(currentTask.getMessage().dst)) {
-//			core.addMessageToOutputQueue(currentTask.getMessage());
-//		}
 		logs.add(new Log(currentTask.id, timer, LogType.TASK_FINISHED, "", LogSeverity.NORMAL));
 		if (!currentTask.firstPeriodExecuted) {
-			//for (SWComponent c : Architecture.getSWComponents()) {
-				addDelayComponent();	
-		//	}
+			addDelayComponent();	
 			currentTask.firstPeriodExecuted = true;
 		}
+
 		int nextPeriodStartOfTask = getNextPeriodStartOfTask(currentTask);
-		double delay = timer - nextPeriodStartOfTask;
-		
 		List<SWComponent> components = getSWComponentsFromCurrentTask();
 		for (SWComponent c : components) {
 			core.ecu.arc.addStartTime(c, currentTask.periodCounter, nextPeriodStartOfTask - currentTask.period);
@@ -221,7 +193,6 @@ public class Scheduler {
 			logs.add(new Log(currentTask.id, nextPeriodStartOfTask, LogType.DEADLINE_MISSED, "", LogSeverity.CRITICAL));
 			setTaskToReady(currentTask, false);
 			runNextTask(false);
-			//finishExecution(false);
 		}
 	}
 	
@@ -238,7 +209,6 @@ public class Scheduler {
 							logs.add(new Log(tasks.get(j).id, firstTime, LogType.DEADLINE_MISSED, "", LogSeverity.CRITICAL));
 							setTaskToReady(tasks.get(j), false);
 							runNextTask(false);
-							//finishExecution(false);
 						}
 						break;
 					}
@@ -289,16 +259,6 @@ public class Scheduler {
 		setTaskToRunning(nextTask);
 	}
 	
-	private void finishExecution() {
-		data.put("idle", Double.valueOf(((double) idleTime/(double) maxTime)*100).toString());
-		data.put("e2e0", Double.valueOf(core.ecu.arc.getSWComponents().get(0).e2eDelay).toString());
-		data.put("e2e1", Double.valueOf(core.ecu.arc.getSWComponents().get(1).e2eDelay).toString());
-		data.put("e2e2", Double.valueOf(core.ecu.arc.getSWComponents().get(2).e2eDelay).toString());
-		data.put("e2e3", Double.valueOf(core.ecu.arc.getSWComponents().get(3).e2eDelay).toString());
-		//Util.printLog(logs, data);
-//		System.exit(-1);
-	}
-	
 	public boolean isTaskSameCore(int _id) {
 		for (OsTask t : tasks) {
 			if (t.id == _id) {
@@ -308,39 +268,13 @@ public class Scheduler {
 		return false;
 	}
 	
-	public void addDelayToSWComponent() {
-		// TODO change
-		List<Runnable> tempRunnables = new ArrayList<Runnable>();
-		for (Runnable r1 : currentTask.runnables) {
-			for (SWComponent c : core.ecu.arc.getSWComponents()) {
-					for (Runnable r2 : c.runnables) {
-						if (r1.id == r2.id && !tempRunnables.contains(r1)) {
-//							c.addDelay(delay);
-							tempRunnables.add(r1);
-//							break;
-						}
-					}	
-			}
-		}
-		
-		double delay = 0;
-		for (Runnable r : tempRunnables) {
-			delay += r.getExecTime();
-		}
-		
-//		_component.addDelay((getNextPeriodStartOfTask(currentTask) - currentTask.period) +  delay);
-
-	}
-	
 	public void addDelayComponent() {
 		List<SWComponent> tempComponents = new ArrayList<SWComponent>();
 		for (Runnable r1 : currentTask.runnables) {
 			for (SWComponent c : core.ecu.arc.getSWComponents()) {
 					for (Runnable r2 : c.runnables) {
 						if (r1.id == r2.id && !tempComponents.contains(c)) {
-//							c.addDelay(delay);
 							tempComponents.add(c);
-//							break;
 						}
 					}	
 			}
@@ -423,53 +357,6 @@ public class Scheduler {
 				}
 			}
 		}
-	}
-	
-	public void takeMessagesFromQueue() {
-//		List<Integer> dsts = new ArrayList<Integer>();
-		Hashtable<Integer, Message> msgs = new Hashtable<Integer, Message>();
-		for (int i=0; i<core.inputMessages.size(); i++) {
-			Message m = core.inputMessages.get(i);
-			if (timer >= m.updTs && m.dst == currentTask.id) {
-				if (!msgs.containsKey(core.inputMessages.get(i).src)) {
-					msgs.put(m.src, m);
-//					dsts.add(i);
-				} else {
-					Message _m = msgs.get(m.src);
-					if (m.ts > _m.ts) {
-						msgs.remove(_m.src);
-						msgs.put(m.src, m);
-					}
-				}
-			}
-		}
-		
-		for (Integer src : msgs.keySet()) {
-			Message m = msgs.get(src);
-//			this.logs.add(new Log(m.dst, timer, LogType.MESSAGE_READ, "Message read and removed. Source: " + m.src + ". Age: " + Double.valueOf(timer - m.ts).toString(), LogSeverity.NORMAL));				
-		}
-		
-		List<Message> cpy = core.inputMessages;
-		
-		for (int i=0; i<cpy.size(); i++) {
-			if (core.inputMessages.get(i).dst == currentTask.id) {
-				core.inputMessages.remove(i);
-			}
-		}
-		
-//		for (int i=0; i<dsts.size(); i++) {
-//			Message m = core.inputMessages.get(dsts.get(i));
-//			this.logs.add(new Log(m.dst, timer, LogType.MESSAGE_READ, "Message read and removed. Source: " + m.src + ". Age: " + Double.valueOf(timer - m.ts).toString(), LogSeverity.NORMAL));			
-//			core.inputMessages.remove(dsts.get(i));
-//		}
-		
-//		for (Message m : core.inputMessages) {
-//			if (m.dst == currentTask.id) {
-//				this.logs.add(new Log(m.dst, timer, LogType.MESSAGE_READ, "Message read and removed from the input queue by task: " + m.dst + ". Message age: " + Double.valueOf(timer - m.ts).toString(), LogSeverity.NORMAL));			
-//				core.inputMessages.remove(m);
-//			}
-//		}
-		
 	}
 	
 }
