@@ -168,6 +168,7 @@ public class Scheduler {
 		
 		// TODO be careful, this should not be executed on preemption
 		if (currentTask.currentExecTime == 0) {
+//			takeMessagesFromQueue();
 			currentTask.computeTaskTime();	
 		}
 		currentTaskRunningTimeStart = timer;
@@ -307,13 +308,6 @@ public class Scheduler {
 		return false;
 	}
 	
-	public void coreReceivedMessage(Message _msg) {
-		if (isTaskSameCore(_msg.dst)) {
-			this.logs.add(new Log(_msg.dst, _msg.updTs, LogType.MESSAGE_RECEIVED, "Message source: task " + _msg.src + ". Message age: " + Double.valueOf(_msg.updTs - _msg.ts).toString(), LogSeverity.NORMAL));			
-		}
-		core.inputMessages.remove(_msg);
-	}
-	
 	public void addDelayToSWComponent() {
 		// TODO change
 		List<Runnable> tempRunnables = new ArrayList<Runnable>();
@@ -365,12 +359,10 @@ public class Scheduler {
 	}
 	
 	public void sendMessages() {
-		List<Integer> _dstTasks = new ArrayList<Integer>();
 		for (Runnable r : currentTask.runnables) {
 			if (r.messageDst != -1) {
 				OsTask t = findTaskOfRunnable(r.messageDst);
-				if (!isTaskSameCore(t.id) && !_dstTasks.contains(t.id)) {
-					_dstTasks.add(t.id);
+				if (!isTaskSameCore(t.id)) {
 					Message msg = currentTask.createMessage(timer, r.messagePriority, r.messageSize, t.id, r.messageExtendedIdentifier);
 					core.addMessageToOutputQueue(msg);
 				}	
@@ -431,6 +423,53 @@ public class Scheduler {
 				}
 			}
 		}
+	}
+	
+	public void takeMessagesFromQueue() {
+//		List<Integer> dsts = new ArrayList<Integer>();
+		Hashtable<Integer, Message> msgs = new Hashtable<Integer, Message>();
+		for (int i=0; i<core.inputMessages.size(); i++) {
+			Message m = core.inputMessages.get(i);
+			if (timer >= m.updTs && m.dst == currentTask.id) {
+				if (!msgs.containsKey(core.inputMessages.get(i).src)) {
+					msgs.put(m.src, m);
+//					dsts.add(i);
+				} else {
+					Message _m = msgs.get(m.src);
+					if (m.ts > _m.ts) {
+						msgs.remove(_m.src);
+						msgs.put(m.src, m);
+					}
+				}
+			}
+		}
+		
+		for (Integer src : msgs.keySet()) {
+			Message m = msgs.get(src);
+//			this.logs.add(new Log(m.dst, timer, LogType.MESSAGE_READ, "Message read and removed. Source: " + m.src + ". Age: " + Double.valueOf(timer - m.ts).toString(), LogSeverity.NORMAL));				
+		}
+		
+		List<Message> cpy = core.inputMessages;
+		
+		for (int i=0; i<cpy.size(); i++) {
+			if (core.inputMessages.get(i).dst == currentTask.id) {
+				core.inputMessages.remove(i);
+			}
+		}
+		
+//		for (int i=0; i<dsts.size(); i++) {
+//			Message m = core.inputMessages.get(dsts.get(i));
+//			this.logs.add(new Log(m.dst, timer, LogType.MESSAGE_READ, "Message read and removed. Source: " + m.src + ". Age: " + Double.valueOf(timer - m.ts).toString(), LogSeverity.NORMAL));			
+//			core.inputMessages.remove(dsts.get(i));
+//		}
+		
+//		for (Message m : core.inputMessages) {
+//			if (m.dst == currentTask.id) {
+//				this.logs.add(new Log(m.dst, timer, LogType.MESSAGE_READ, "Message read and removed from the input queue by task: " + m.dst + ". Message age: " + Double.valueOf(timer - m.ts).toString(), LogSeverity.NORMAL));			
+//				core.inputMessages.remove(m);
+//			}
+//		}
+		
 	}
 	
 }

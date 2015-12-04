@@ -13,7 +13,7 @@ public class InterECUBus {
 	public InterECUBus(int _bandwith) {
 		this.bandwith = _bandwith;
 		this.isBusy = false;
-		this.ecus = new ArrayList<ECU>();
+//		this.ecus = new ArrayList<ECU>();
 	}
 
 	public void computeDelay(Message _msg) {
@@ -50,8 +50,12 @@ public class InterECUBus {
 		}
 	}
 
-	public void addECU(ECU e) {
-		this.ecus.add(e);
+//	public void addECU(ECU e) {
+//		this.ecus.add(e);
+//	}
+	
+	public void setECUs(List<ECU> _ecus) {
+		this.ecus = _ecus;
 	}
 	
 }

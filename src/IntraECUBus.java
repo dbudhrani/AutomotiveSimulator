@@ -13,7 +13,7 @@ public class IntraECUBus {
 	public IntraECUBus(int _bandwith) {
 		this.bandwith = _bandwith;
 		this.isBusy = false;
-		this.cores = new ArrayList<Core>();
+//		this.cores = new ArrayList<Core>();
 	}
 	
 	public void computeDelay(Message _msg) {
@@ -29,7 +29,7 @@ public class IntraECUBus {
 		for (Core c : cores) {
 			if (!c.scheduler.isTaskSameCore(_msg.src)) {
 //				c.scheduler.logs.add(new Log(-1, c.scheduler.timer, LogType.MESSAGE_SENT, LogSeverity.NORMAL));
-				c.inputMessages.add(_msg);
+//				c.inputMessages.add(_msg);
 //				c.scheduler.logs.add(new Log(-1, c.scheduler.timer + this.delay, LogType.MESSAGE_RECEIVED, LogSeverity.NORMAL));
 				c.checkInputMessages(_msg);	
 			}
@@ -51,5 +51,9 @@ public class IntraECUBus {
 			}
 		}
 	}
-		
+
+	public void setCores(List<Core> _cores) {
+		this.cores = _cores;
+	}
+	
 }

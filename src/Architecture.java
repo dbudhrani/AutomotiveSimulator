@@ -20,14 +20,13 @@ public class Architecture {
 		this.finishingTimes = new Hashtable<Integer, Hashtable<Integer, List<Double>>>();
 	}
 	
-	public void execute(int _maxTime) {
+	public void execute(final int _maxTime) {
 	
 		initStartFinishTimes();
-
+		
 		for (ECU e : this.ecus) {
 			for (Core c : e.cores) {
-				c.scheduler.init();
-				
+				c.scheduler.init();				
 				c.scheduler.execute(_maxTime);
 			}
 		}

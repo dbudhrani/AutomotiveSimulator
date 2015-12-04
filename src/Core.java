@@ -31,10 +31,6 @@ public class Core {
 		this.ecu = _ecu;
 	}
 	
-	public void addRunnable(Runnable _runnable) {
-		//this.runnables.add(_runnable);
-	}
-	
 	public void addMessageToOutputQueue(Message _msg) {
 		scheduler.logs.add(new Log(_msg.src, scheduler.timer, LogType.MESSAGE_SENT, "Message destination: " + (_msg.dst == -1 ? "ACTUATOR" : "task " + _msg.dst), LogSeverity.NORMAL));
 		outputMessages.add(_msg);
@@ -49,13 +45,18 @@ public class Core {
 	}
 	
 	public void checkInputMessages(Message _msg) {
+		boolean isSameCore = false;
 		for (OsTask t : scheduler.tasks) {
 			if (t.id == _msg.dst) {
-				scheduler.coreReceivedMessage(_msg);
+				this.inputMessages.add(_msg);
+				scheduler.logs.add(new Log(_msg.dst, _msg.updTs, LogType.MESSAGE_RECEIVED, "Message source: task " + _msg.src, LogSeverity.NORMAL));			
+				isSameCore = true;
 				break;
 			}
 		}
-		inputMessages.remove(_msg);
+		if (!isSameCore) {
+			inputMessages.remove(_msg);	
+		}
 	}
 	
 }
