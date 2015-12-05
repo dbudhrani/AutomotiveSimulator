@@ -1,7 +1,15 @@
+package dtu.fmes.automotivesimulator.entity;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
+
+import dtu.fmes.automotivesimulator.entity.enumeration.EventType;
+import dtu.fmes.automotivesimulator.entity.enumeration.LogSeverity;
+import dtu.fmes.automotivesimulator.entity.enumeration.LogType;
+import dtu.fmes.automotivesimulator.entity.enumeration.OsTaskState;
+
 
 
 public class Scheduler {
@@ -76,7 +84,7 @@ public class Scheduler {
 		data.put("idle", Double.valueOf(((double) idleTime/(double) maxTime)*100).toString());
 	}
 	
-	private int getNextPeriodStartOfTask(OsTask task) {
+	private double getNextPeriodStartOfTask(OsTask task) {
 		for (int i=0; i<events.size(); i++) {
 			if (events.get(i).taskId == task.id && events.get(i).eventType == EventType.NEW_PERIOD_START) {
 				return events.get(i).time;
@@ -114,7 +122,7 @@ public class Scheduler {
 		logs.add(new Log(task.id, timer, LogType.TASK_READY, "", LogSeverity.NORMAL));
 		if (!isPreemption || task.state == OsTaskState.WAITING) {
 			//W->Rdy || Run->Rdy
-			int t = -1;
+			double t = -1;
 			for (int i=0; i<events.size(); i++) {
 				if (events.get(i).taskId == task.id) {
 					t = events.get(i).time;
@@ -174,7 +182,7 @@ public class Scheduler {
 			currentTask.firstPeriodExecuted = true;
 		}
 
-		int nextPeriodStartOfTask = getNextPeriodStartOfTask(currentTask);
+		double nextPeriodStartOfTask = getNextPeriodStartOfTask(currentTask);
 		List<SWComponent> components = getSWComponentsFromCurrentTask();
 		for (SWComponent c : components) {
 			core.ecu.arc.addStartTime(c, currentTask.periodCounter, nextPeriodStartOfTask - currentTask.period);
@@ -197,7 +205,7 @@ public class Scheduler {
 	}
 	
 	private void checkNewPeriods() {
-		int firstTime = events.get(0).time;
+		double firstTime = events.get(0).time;
 		timer = firstTime;
 		for (int i=0; i<events.size(); i++) {
 			if (events.get(i).time == firstTime) {

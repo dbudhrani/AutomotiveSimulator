@@ -1,3 +1,4 @@
+package dtu.fmes.automotivesimulator.entity;
 
 public class Message implements Comparable<Message> {
 

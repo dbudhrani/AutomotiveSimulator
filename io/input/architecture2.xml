@@ -4,25 +4,25 @@
 			<Cores>
 				<Core id="1">
 					<OsTasks>
-						<OsTask id="1" period="8">
+						<OsTask id="1" period="12">
 							<Runnables>
 								<Runnable id="10" />
 							</Runnables>
 						</OsTask>
-						<OsTask id="2" period="20">
+						<OsTask id="2" period="30">
 							<Runnables>
 								<Runnable id="21" />
 								<Runnable id="23" />
 								<Runnable id="24" />
 							</Runnables>
 						</OsTask>
-						<OsTask id="3" period="16">
+						<OsTask id="3" period="24">
 							<Runnables>
 								<Runnable id="25" />
 								<Runnable id="28" />
 							</Runnables>
 						</OsTask>
-						<OsTask id="4" period="8">
+						<OsTask id="4" period="12">
 							<Runnables>
 								<Runnable id="29" />
 							</Runnables>
@@ -36,18 +36,18 @@
 				</Core>
 				<Core id="2">
 					<OsTasks>
-						<OsTask id="5" period="12">
+						<OsTask id="5" period="18">
 							<Runnables>
 								<Runnable id="8" />
 								<Runnable id="9" />
 							</Runnables>
 						</OsTask>
-						<OsTask id="6" period="3">
+						<OsTask id="6" period="4.5">
 							<Runnables>
 								<Runnable id="20" />
 							</Runnables>
 						</OsTask>
-						<OsTask id="7" period="12">
+						<OsTask id="7" period="18">
 							<Runnables>
 								<Runnable id="26" />
 								<Runnable id="30" />
@@ -62,17 +62,17 @@
 				</Core>
 				<Core id="3">
 					<OsTasks>
-						<OsTask id="8" period="6">
+						<OsTask id="8" period="9">
 							<Runnables>
 								<Runnable id="11" />
 							</Runnables>
 						</OsTask>
-						<OsTask id="9" period="3">
+						<OsTask id="9" period="4.5">
 							<Runnables>
 								<Runnable id="22" />
 							</Runnables>
 						</OsTask>
-						<OsTask id="10" period="12">
+						<OsTask id="10" period="18">
 							<Runnables>
 								<Runnable id="27" />
 								<Runnable id="31" />
@@ -98,18 +98,18 @@
 			<Cores>
 				<Core id="4">
 					<OsTasks>
-						<OsTask id="11" period="12">
+						<OsTask id="11" period="18">
 							<Runnables>
 								<Runnable id="1" />
 								<Runnable id="2" />
 							</Runnables>
 						</OsTask>
-						<OsTask id="12" period="3">
+						<OsTask id="12" period="4.5">
 							<Runnables>
 								<Runnable id="16" />
 							</Runnables>
 						</OsTask>
-						<OsTask id="13" period="12">
+						<OsTask id="13" period="18">
 							<Runnables>
 								<Runnable id="19" />
 							</Runnables>
@@ -123,22 +123,22 @@
 				</Core>
 				<Core id="5">
 					<OsTasks>
-						<OsTask id="14" period="8">
+						<OsTask id="14" period="12">
 							<Runnables>
 								<Runnable id="5" />
 							</Runnables>
 						</OsTask>
-						<OsTask id="15" period="4">
+						<OsTask id="15" period="6">
 							<Runnables>
 								<Runnable id="14" />
 							</Runnables>
 						</OsTask>
-						<OsTask id="16" period="8">
+						<OsTask id="16" period="12">
 							<Runnables>
 								<Runnable id="15" />
 							</Runnables>
 						</OsTask>
-						<OsTask id="17" period="16">
+						<OsTask id="17" period="24">
 							<Runnables>
 								<Runnable id="18" />
 							</Runnables>
@@ -152,7 +152,7 @@
 				</Core>
 				<Core id="6">
 					<OsTasks>
-						<OsTask id="18" period="16">
+						<OsTask id="18" period="24">
 							<Runnables>
 								<Runnable id="3" />
 								<Runnable id="4" />
@@ -160,7 +160,7 @@
 								<Runnable id="7" />
 							</Runnables>
 						</OsTask>
-						<OsTask id="19" period="10">
+						<OsTask id="19" period="15">
 							<Runnables>
 								<Runnable id="12" />
 								<Runnable id="13" />

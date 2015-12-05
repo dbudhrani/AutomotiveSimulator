@@ -1,6 +1,8 @@
+package dtu.fmes.automotivesimulator.entity;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+
 
 
 public class Architecture {

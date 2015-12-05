@@ -1,3 +1,4 @@
+package dtu.fmes.automotivesimulator.util;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -13,6 +14,18 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import dtu.fmes.automotivesimulator.entity.Architecture;
+import dtu.fmes.automotivesimulator.entity.Core;
+import dtu.fmes.automotivesimulator.entity.ECU;
+import dtu.fmes.automotivesimulator.entity.InterECUBus;
+import dtu.fmes.automotivesimulator.entity.IntraECUBus;
+import dtu.fmes.automotivesimulator.entity.Log;
+import dtu.fmes.automotivesimulator.entity.OsTask;
+import dtu.fmes.automotivesimulator.entity.Runnable;
+import dtu.fmes.automotivesimulator.entity.SWComponent;
+import dtu.fmes.automotivesimulator.entity.enumeration.LogSeverity;
+import dtu.fmes.automotivesimulator.entity.enumeration.LogType;
 
 
 public class Util {
@@ -297,7 +310,7 @@ public class Util {
 											Node osTaskNode = osTasksChildren.item(l);
 											if (osTaskNode.getNodeType() == 1) {
 												Integer _otid = Integer.valueOf(osTaskNode.getAttributes().getNamedItem("id").getNodeValue());
-												Integer _otperiod = Integer.valueOf(osTaskNode.getAttributes().getNamedItem("period").getNodeValue());
+												Double _otperiod = Double.valueOf(osTaskNode.getAttributes().getNamedItem("period").getNodeValue());
 												OsTask _osTask = new OsTask(_otid, _otperiod, c);
 												NodeList osTaskChildren = osTaskNode.getChildNodes();
 												List<Runnable> _taskRunnables = new ArrayList<Runnable>();

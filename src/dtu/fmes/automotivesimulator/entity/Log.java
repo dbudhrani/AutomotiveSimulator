@@ -1,3 +1,7 @@
+package dtu.fmes.automotivesimulator.entity;
+import dtu.fmes.automotivesimulator.entity.enumeration.LogSeverity;
+import dtu.fmes.automotivesimulator.entity.enumeration.LogType;
+
 
 public class Log implements Comparable<Log>  {
 	

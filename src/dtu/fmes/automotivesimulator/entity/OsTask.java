@@ -1,5 +1,10 @@
+package dtu.fmes.automotivesimulator.entity;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import dtu.fmes.automotivesimulator.entity.enumeration.OsTaskState;
+
 
 
 public class OsTask implements Comparable<OsTask> {
@@ -7,7 +12,7 @@ public class OsTask implements Comparable<OsTask> {
 	public int id;
 	public OsTaskState state;
 	public double execTime;
-	public int period;
+	public double period;
 	public int nextPeriod;
 	public int periodCounter;	
 	public double currentExecTime;
@@ -19,7 +24,7 @@ public class OsTask implements Comparable<OsTask> {
 	
 	public OsTask(Runnable _runnable) {}
 	
-	public OsTask(int _id, int _period, Core _core) {
+	public OsTask(int _id, double _period, Core _core) {
 		this.id = _id;
 		this.period = _period;
 		this.priority = 1/((double)_period);

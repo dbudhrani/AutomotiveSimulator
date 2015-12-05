@@ -1,5 +1,10 @@
+package dtu.fmes.automotivesimulator.entity;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import dtu.fmes.automotivesimulator.entity.enumeration.LogSeverity;
+import dtu.fmes.automotivesimulator.entity.enumeration.LogType;
 
 
 public class Core {

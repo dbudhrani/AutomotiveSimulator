@@ -1,5 +1,8 @@
+package dtu.fmes.automotivesimulator.entity;
+
 import java.util.ArrayList;
 import java.util.List;
+
 
 
 public class ECU {

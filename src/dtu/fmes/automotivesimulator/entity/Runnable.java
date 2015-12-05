@@ -1,3 +1,4 @@
+package dtu.fmes.automotivesimulator.entity;
 import java.util.Random;
 
 
