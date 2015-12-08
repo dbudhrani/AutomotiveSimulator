@@ -1,0 +1,183 @@
+<Architecture>
+	<ECUs>
+		<ECU id="1" processorSpeed="2.4">
+			<Cores>
+				<Core id="1">
+					<OsTasks>
+						<OsTask id="1" period="24">
+							<Runnables>
+								<Runnable id="1" />
+								<Runnable id="2" />
+								<Runnable id="3" />
+								<Runnable id="4" />
+							</Runnables>
+						</OsTask>
+						<OsTask id="2" period="24">
+							<Runnables>
+								<Runnable id="8" />
+								<Runnable id="9" />
+								<Runnable id="10" />
+								<Runnable id="11" />
+							</Runnables>
+						</OsTask>
+					</OsTasks>
+					<SWComponents>
+						<SWComponent id="1" time="2" />
+						<SWComponent id="2" time="2" />
+					</SWComponents>
+				</Core>
+				<Core id="2">
+					<OsTasks>
+						<OsTask id="3" period="24">
+							<Runnables>
+								<Runnable id="25" />
+								<Runnable id="26" />
+								<Runnable id="27" />
+								<Runnable id="28" />
+							</Runnables>
+						</OsTask>
+						<OsTask id="4" period="18">
+							<Runnables>
+								<Runnable id="12" />
+								<Runnable id="13" />
+								<Runnable id="14" />
+								<Runnable id="15" />
+							</Runnables>
+						</OsTask>
+					</OsTasks>
+					<SWComponents>
+						<SWComponent id="3" time="2" />
+						<SWComponent id="6" time="2" />
+					</SWComponents>
+				</Core>
+			</Cores>
+			<IntraECUBus bandwidth="200">
+				<Cores>
+					<Core id="1" />
+					<Core id="2" />
+				</Cores>
+			</IntraECUBus>
+		</ECU>
+		<ECU id="2" processorSpeed="2.4">
+			<Cores>
+				<Core id="3">
+					<OsTasks>
+						<OsTask id="5" period="30">
+							<Runnables>
+								<Runnable id="5" />
+								<Runnable id="6" />
+								<Runnable id="7" />
+								<Runnable id="18" />
+							</Runnables>
+						</OsTask>
+						<OsTask id="6" period="30">
+							<Runnables>
+								<Runnable id="29" />
+								<Runnable id="30" />
+								<Runnable id="31" />
+								<Runnable id="19" />
+							</Runnables>
+						</OsTask>
+					</OsTasks>
+					<SWComponents>
+						<SWComponent id="1" time="2" />
+						<SWComponent id="4" time="4" />
+						<SWComponent id="6" time="2" />
+					</SWComponents>
+				</Core>
+				<Core id="4">
+					<OsTasks>
+						<OsTask id="7" period="15">
+							<Runnables>
+								<Runnable id="20" />
+								<Runnable id="21" />
+								<Runnable id="22" />
+								<Runnable id="23" />
+							</Runnables>
+						</OsTask>
+						<OsTask id="8" period="15">
+							<Runnables>
+								<Runnable id="24" />
+								<Runnable id="16" />
+								<Runnable id="17" />
+							</Runnables>
+						</OsTask>
+					</OsTasks>
+					<SWComponents>
+						<SWComponent id="3" time="2" />
+						<SWComponent id="5" time="2" />
+					</SWComponents>
+				</Core>
+			</Cores>
+			<IntraECUBus bandwidth="200">
+				<Cores>
+					<Core id="3" />
+					<Core id="4" />
+				</Cores>
+			</IntraECUBus>
+		</ECU>
+	</ECUs>
+	<InterECUBus bandwidth="400">
+		<ECUs>
+			<ECU id="1" />
+			<ECU id="2" />
+		</ECUs>
+	</InterECUBus>
+	<SWComponents>
+		<SWComponent id="1" name="SW1">
+			<Runnables>
+				<Runnable id="1" name="F1" messageSize="5" messagePriority="16" messageExtendedIdentifier="true" dst="2" bcet="1.5" wcet="2" />
+				<Runnable id="2" name="F2" messageSize="4" messagePriority="22" messageExtendedIdentifier="true" dst="3" bcet="1.2" wcet="2" />
+				<Runnable id="3" name="F3" messageSize="7" messagePriority="12" messageExtendedIdentifier="true" dst="4" bcet="1.5" wcet="2" />
+				<Runnable id="4" name="F4" messageSize="8" messagePriority="11" messageExtendedIdentifier="true" dst="5" bcet="1.2" wcet="2" />
+				<Runnable id="5" name="F5" messageSize="2" messagePriority="26" messageExtendedIdentifier="true" dst="6" bcet="1.7" wcet="2" />
+				<Runnable id="6" name="F6" messageSize="3" messagePriority="9" messageExtendedIdentifier="true" dst="7" bcet="1.5" wcet="2" />
+				<Runnable id="7" name="F7" messageSize="1" messagePriority="46" messageExtendedIdentifier="true" dst="-1" bcet="1.2" wcet="2" />
+			</Runnables>
+		</SWComponent>
+		<SWComponent id="2" name="SW2">
+			<Runnables>
+				<Runnable id="8" name="F8" messageSize="5" messagePriority="5" messageExtendedIdentifier="true" dst="9" bcet="1.7" wcet="2" />
+				<Runnable id="9" name="F9" messageSize="2" messagePriority="18" messageExtendedIdentifier="true" dst="10" bcet="1.5" wcet="2" />
+				<Runnable id="10" name="F10" messageSize="7" messagePriority="25" messageExtendedIdentifier="true" dst="11" bcet="1.2" wcet="2" />
+				<Runnable id="11" name="F11" messageSize="1" messagePriority="54" messageExtendedIdentifier="true" dst="-1" bcet="1.5" wcet="2" />
+			</Runnables>
+		</SWComponent>
+		<SWComponent id="3" name="SW3">
+			<Runnables>
+				<Runnable id="12" name="F12" messageSize="8" messagePriority="24" messageExtendedIdentifier="true" dst="13" bcet="0.8" wcet="1" />
+				<Runnable id="13" name="F13" messageSize="4" messagePriority="13" messageExtendedIdentifier="true" dst="14" bcet="1.5" wcet="2" />
+				<Runnable id="14" name="F14" messageSize="3" messagePriority="15" messageExtendedIdentifier="true" dst="15" bcet="0.5" wcet="1" />
+				<Runnable id="15" name="F15" messageSize="3" messagePriority="10" messageExtendedIdentifier="true" dst="16" bcet="1.7" wcet="2" />
+				<Runnable id="16" name="F16" messageSize="7" messagePriority="19" messageExtendedIdentifier="true" dst="17" bcet="0.3" wcet="1" />
+				<Runnable id="17" name="F17" messageSize="1" messagePriority="42" messageExtendedIdentifier="true" dst="-1" bcet="1.7" wcet="2" />
+			</Runnables>
+		</SWComponent>
+		<SWComponent id="4" name="SW4">
+			<Runnables>
+				<Runnable id="18" name="F18" messageSize="5" messagePriority="20" messageExtendedIdentifier="true" dst="19" bcet="3.2" wcet="4" />
+				<Runnable id="19" name="F19" messageSize="1" messagePriority="35" messageExtendedIdentifier="true" dst="-1" bcet="3.5" wcet="4" />
+			</Runnables>
+		</SWComponent>
+		<SWComponent id="5" name="SW5">
+			<Runnables>
+				<Runnable id="20" name="F20" messageSize="5" messagePriority="21" messageExtendedIdentifier="true" dst="21" bcet="0.8" wcet="1" />
+				<Runnable id="21" name="F21" messageSize="7" messagePriority="8" messageExtendedIdentifier="true" dst="22" bcet="0.5" wcet="1" />
+				<Runnable id="22" name="F22" messageSize="4" messagePriority="23" messageExtendedIdentifier="true" dst="23" bcet="0.7" wcet="1" />
+				<Runnable id="23" name="F23" messageSize="3" messagePriority="28" messageExtendedIdentifier="true" dst="24" bcet="1.4" wcet="2" />
+				<Runnable id="24" name="F24" messageSize="1" messagePriority="41" messageExtendedIdentifier="true" dst="-1" bcet="1.7" wcet="2" />
+			</Runnables>
+		</SWComponent>
+		<SWComponent id="6" name="SW6">
+			<Runnables>
+				<Runnable id="25" name="F25" messageSize="8" messagePriority="7" messageExtendedIdentifier="true" dst="26" bcet="1.2" wcet="2" />
+				<Runnable id="26" name="F26" messageSize="3" messagePriority="17" messageExtendedIdentifier="true" dst="27" bcet="1.5" wcet="2" />
+				<Runnable id="27" name="F27" messageSize="2" messagePriority="27" messageExtendedIdentifier="true" dst="28" bcet="1.4" wcet="2" />
+				<Runnable id="28" name="F28" messageSize="4" messagePriority="6" messageExtendedIdentifier="true" dst="29" bcet="1.7" wcet="2" />
+				<Runnable id="29" name="F29" messageSize="3" messagePriority="4" messageExtendedIdentifier="true" dst="30" bcet="1.7" wcet="2" />
+				<Runnable id="30" name="F30" messageSize="5" messagePriority="14" messageExtendedIdentifier="true" dst="31" bcet="1.5" wcet="2" />
+				<Runnable id="31" name="F31" messageSize="1" messagePriority="32" messageExtendedIdentifier="true" dst="-1" bcet="1.7" wcet="2" />
+			</Runnables>
+		</SWComponent>
+	</SWComponents>
+</Architecture>
