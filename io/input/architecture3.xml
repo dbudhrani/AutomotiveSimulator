@@ -22,8 +22,8 @@
 						</OsTask>
 					</OsTasks>
 					<SWComponents>
-						<SWComponent id="1" time="2" />
-						<SWComponent id="2" time="2" />
+						<SWComponent id="1" time="8" />
+						<SWComponent id="2" time="8" />
 					</SWComponents>
 				</Core>
 				<Core id="2">
@@ -46,8 +46,8 @@
 						</OsTask>
 					</OsTasks>
 					<SWComponents>
-						<SWComponent id="3" time="2" />
-						<SWComponent id="6" time="2" />
+						<SWComponent id="3" time="6" />
+						<SWComponent id="6" time="8" />
 					</SWComponents>
 				</Core>
 			</Cores>
@@ -80,9 +80,9 @@
 						</OsTask>
 					</OsTasks>
 					<SWComponents>
-						<SWComponent id="1" time="2" />
+						<SWComponent id="1" time="6" />
 						<SWComponent id="4" time="4" />
-						<SWComponent id="6" time="2" />
+						<SWComponent id="6" time="6" />
 					</SWComponents>
 				</Core>
 				<Core id="4">
@@ -104,8 +104,8 @@
 						</OsTask>
 					</OsTasks>
 					<SWComponents>
-						<SWComponent id="3" time="2" />
-						<SWComponent id="5" time="2" />
+						<SWComponent id="3" time="3" />
+						<SWComponent id="5" time="5" />
 					</SWComponents>
 				</Core>
 			</Cores>
