@@ -1,36 +1,28 @@
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 
 
 public class OsTask implements Comparable<OsTask> {
 
 	public int id;
-	
 	public OsTaskState state;
-	
 	public double execTime;
-	public int period;
-	
+	public double period;
 	public int nextPeriod;
-	
-//	public double periodInit;
 	public double currentExecTime;
-	
 	public double priority;
-	
 	public List<Message> messages;
-	
-	
 	public Core core;
 	public List<Runnable> runnables;
-	
 	public boolean firstPeriodExecuted;
+	
 	
 	public OsTask(Runnable _runnable) {
 		
 	}
 	
-	public OsTask(int _id, int _period, Core _core) {
+	public OsTask(int _id, double _period, Core _core) {
 		this.id = _id;
 		//this.wcet = _wcet;
 		this.period = _period;
@@ -85,5 +77,7 @@ public class OsTask implements Comparable<OsTask> {
 	public void addRunnable(Runnable r) {
 		this.runnables.add(r);
 	}
+	
+	
 	
 }

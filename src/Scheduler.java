@@ -31,12 +31,13 @@ public class Scheduler {
 	public Hashtable<Integer, Double> swcomponentPeriods;
 	public Hashtable<Integer, List<OsTask>> htSWCOsTasks;
 	public NavigableMap<Integer, Double> swcomponentsStartTime;
-	public Hashtable<Integer, Integer> SWComponentExecutionCounter;
 	public Hashtable<Integer, Boolean> SWComponentInitiated;
 	
 	public double idleTime = 0;
 	public double idleTimeStart = 0;
 	public double idleTimeFinish = 0;
+	
+	public Hashtable<Integer, Integer> componentCounter;
 	
 	OsTask currentTask;
 	Core core;
@@ -54,8 +55,8 @@ public class Scheduler {
 		this.swcomponentsStartTime = new TreeMap<Integer, Double>();
 		this.currentSWComponent = -1;
 		this.e2eDelays = new Hashtable<Integer, List<Double>>();
-		this.SWComponentExecutionCounter = new Hashtable<Integer, Integer>();
 		this.SWComponentInitiated = new Hashtable<Integer, Boolean>();
+		this.componentCounter = new Hashtable<Integer, Integer>();
 	}
 
 	public void addOsTask(OsTask _osTask) {
@@ -66,8 +67,8 @@ public class Scheduler {
 		System.out.println("Init - Core id: " + core.id);
 		calculateHyperperiod();
 		loadSWComponentsOsTasks();
-		initSWCExecCounters();
 		initSWCInitiated();
+		initSWCCounters();
 		loadSWComponentStartTime();
 //		for (SWComponent c : core.ecu.arc.getSWComponents()) {
 //			if (htSWCOsTasks.keySet().contains(c.id)) {
@@ -131,6 +132,7 @@ public class Scheduler {
 					startSWComponent(getSWComponentFromId(nextApplicationStart.taskId), timer);
 				}
 			} else {
+				timer = nextApplicationStart.time;
 				logs.add(new Log(currentSWComponent, timer, LogType.APPLICATION_FINISHED, "", LogSeverity.NORMAL));
 				interruptTask();
 				// start new application
@@ -316,6 +318,7 @@ public class Scheduler {
 	
 	public void taskFinished2() {
 		timer = currentTaskRunningTimeFinish;
+		
 		double taskDeadline = 99999999;
 		for (int i=0; i<events.size(); i++) {
 			if (events.get(i).eventType == EventType.NEW_PERIOD_START && events.get(i).taskId == currentTask.id) {
@@ -328,11 +331,26 @@ public class Scheduler {
 			currentTask.currentExecTime = currentTask.execTime;
 			logs.add(new Log(currentTask.id, timer, LogType.TASK_FINISHED, "Total execution time: " + currentTask.execTime + ". Current execution time: " + currentTask.currentExecTime, LogSeverity.NORMAL));
 			
+			boolean allFinished = true;
+			for (int i=0; i<htSWCOsTasks.get(currentSWComponent).size(); i++) {
+				if (htSWCOsTasks.get(currentSWComponent).get(i).state != OsTaskState.FINISHED) {
+					allFinished = false;
+					System.out.println("Core: " + core.id + ". SWComponent: " + currentSWComponent + ". Task: " + htSWCOsTasks.get(currentSWComponent).get(i).id + ". State: " + htSWCOsTasks.get(currentSWComponent).get(i).state);
+					break;
+				}
+			}
+			
+			currentTask.currentExecTime = 0;
 			for (int i=0; i<htSWCOsTasks.get(currentSWComponent).size(); i++) {
 				if (currentTask.id == htSWCOsTasks.get(currentSWComponent).get(i).id) {
 					htSWCOsTasks.get(currentSWComponent).set(i, currentTask);
 					break;
 				}
+			}
+			
+			if (allFinished) {
+				SWComponent _current = getSWComponentFromId(currentSWComponent);
+				core.ecu.arc.addFinishTime(_current, componentCounter.get(_current.id), timer);
 			}
 			
 			double applicationStartTime = -1;
@@ -343,27 +361,6 @@ public class Scheduler {
 				}
 			}
 						
-			double delayCurrentExec = currentTaskRunningTimeFinish - applicationStartTime;
-			if (SWComponentExecutionCounter.get(currentSWComponent) == 0) {
-				if (!e2eDelays.containsKey(currentSWComponent)) {
-					List<Double> delays = new ArrayList<Double>();
-					delays.add(delayCurrentExec);
-					e2eDelays.put(currentSWComponent, delays);
-				} else {
-					e2eDelays.get(currentSWComponent).add(delayCurrentExec);
-				}
-			} else {
-				double delay = SWComponentExecutionCounter.get(currentSWComponent) * swcomponentPeriods.get(currentSWComponent) + delayCurrentExec;
-				if (!e2eDelays.containsKey(currentSWComponent)) {
-					List<Double> delays = new ArrayList<Double>();
-					delays.add(delay);
-					e2eDelays.put(currentSWComponent, delays);
-				} else {
-					e2eDelays.get(currentSWComponent).add(delay);
-				}
-			}
-			
-			
 			
 			List<Runnable> _r = findRunnables(currentTask);
 			List<Integer> _dstTasks = new ArrayList<Integer>();
@@ -423,7 +420,7 @@ public class Scheduler {
 		OsTask newTask = t;
 		newTask.state = OsTaskState.READY;
 		logs.add(new Log(t.id, timer, LogType.TASK_READY, "", LogSeverity.NORMAL));
-		newTask.currentExecTime = 0;
+		//newTask.currentExecTime = 0;
 		for (int i=0; i<htSWCOsTasks.get(currentSWComponent).size(); i++) {
 			if (t.id == htSWCOsTasks.get(currentSWComponent).get(i).id) {
 				htSWCOsTasks.get(currentSWComponent).set(i, newTask);
@@ -434,9 +431,11 @@ public class Scheduler {
 	
 	public void interruptTask() {
 //		currentTask.state = OsTaskState.READY;
-		double previousExecTime = currentTask.currentExecTime;
+//		double previousExecTime = currentTask.currentExecTime;
 		currentTask.currentExecTime += (timer - currentTaskRunningTimeStart);
-		timer += (currentTask.currentExecTime - previousExecTime);
+//		timer += (currentTask.currentExecTime - previousExecTime);
+//		timer += currentTask.currentExecTime;
+//		timer = currentTaskRunningTimeStart + currentTask.currentExecTime;
 		setTaskToReady2(currentTask);
 		logs.add(new Log(currentTask.id, timer, LogType.TASK_INTERRUPTED, "", LogSeverity.NORMAL));
 
@@ -475,7 +474,6 @@ public class Scheduler {
 
 		boolean firstTimeComponent = false;
 		if (!SWComponentInitiated.get(currentSWComponent)) {
-			SWComponentExecutionCounter.put(currentSWComponent, 0);
 			for (int i=0; i<htSWCOsTasks.get(c.id).size(); i++) {
 				setTaskToReady2(htSWCOsTasks.get(c.id).get(i));
 				setTaskNewPeriod(htSWCOsTasks.get(c.id).get(i), timer + htSWCOsTasks.get(c.id).get(i).period);
@@ -488,9 +486,6 @@ public class Scheduler {
 			if (htSWCOsTasks.get(c.id).get(i).state != OsTaskState.FINISHED) {
 				allFinished = false;
 				System.out.println("Core: " + core.id + ". SWComponent: " + currentSWComponent + ". Task: " + htSWCOsTasks.get(c.id).get(i).id + ". State: " + htSWCOsTasks.get(c.id).get(i).state);
-				if (!firstTimeComponent) {
-					SWComponentExecutionCounter.put(currentSWComponent, SWComponentExecutionCounter.get(currentSWComponent) + 1);	
-				}
 				break;
 			}
 		}
@@ -500,12 +495,14 @@ public class Scheduler {
 		}
 			
 		if (allFinished) {
-			SWComponentExecutionCounter.put(currentSWComponent, 0);
+			incrementCounter(c.id);
+			core.ecu.arc.addStartTime(c, componentCounter.get(c.id), timer);
 			for (int i=0; i<htSWCOsTasks.get(c.id).size(); i++) {
 				setTaskToReady2(htSWCOsTasks.get(c.id).get(i));
 				setTaskNewPeriod(htSWCOsTasks.get(c.id).get(i), timer + htSWCOsTasks.get(c.id).get(i).period);
 			}	
 		}
+		
 		
 		
 		
@@ -560,17 +557,21 @@ public class Scheduler {
 		}
 		return runnables;
 	}
-
-	public void initSWCExecCounters() {
-		for (Integer k : htSWCOsTasks.keySet()) {
-			SWComponentExecutionCounter.put(k, 0);
-		}
-	}
 	
 	public void initSWCInitiated() {
 		for (Integer k : htSWCOsTasks.keySet()) {
 			SWComponentInitiated.put(k, false);
 		}
+	}
+	
+	public void initSWCCounters() {
+		for (Integer k : htSWCOsTasks.keySet()) {
+			componentCounter.put(k, 0);
+		}
+	}
+	
+	public void incrementCounter(int _swcid) {
+		componentCounter.put(_swcid, componentCounter.get(_swcid) + 1);
 	}
 	
 	public OsTask findTaskOfRunnable(int _runnableId) {

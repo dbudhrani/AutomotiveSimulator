@@ -21,118 +21,15 @@ public class Util {
 	public Util() {
 
 	}
-
-	public static Mapping parseMappingFile(String _path) {
-		Mapping m = new Mapping();
-		
-		try {
-			
-			File inputFile = new File(_path);
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document doc = builder.parse(inputFile);
-			
-			doc.getDocumentElement().normalize();
-			System.out.println("Root element: " + doc.getDocumentElement().getNodeName());
-			
-			NodeList mappingNodeList = doc.getElementsByTagName("Mapping");
-			Node mappingNode = mappingNodeList.item(0);
-			
-			NodeList mappingChildren = mappingNode.getChildNodes();
-			Node ecusNode = null;
-			Node coresNode = null;
-			Node osApplicationsNode = null;
-			for (int i=0; i < mappingChildren.getLength(); i++) {
-				if (mappingChildren.item(i).getNodeName().equals("Ecus")) {
-					ecusNode = mappingChildren.item(i);
-				} else if (mappingChildren.item(i).getNodeName().equals("Cores")) {
-					coresNode = mappingChildren.item(i);
-				} else if (mappingChildren.item(i).getNodeName().equals("Os-Applications")) {
-					osApplicationsNode = mappingChildren.item(i);
-				}
-			}
-			
-			if (ecusNode != null) {
-				NodeList ecusChildren = ecusNode.getChildNodes();
-				for (int i=0; i<ecusChildren.getLength(); i++) {
-					Node ecuNode = ecusChildren.item(i);
-					if (ecuNode.getNodeType() == 1) {
-						ECU ecu = new ECU(Integer.parseInt(ecuNode.getNodeName().split("ECU")[1]));
-						NodeList ecuChildren = ecuNode.getChildNodes();
-						for (int j=0; j<ecuChildren.getLength(); j++) {
-							Node componentNode = ecuChildren.item(j);
-							if (componentNode.getNodeType() == 1) {
-								SWComponent component = new SWComponent(componentNode.getTextContent());
-								ecu.addComponent(component);	
-							}
-						}
-						m.ECUs.add(ecu);	
-					}
-				}
-			}
-			
-			if (coresNode != null) {
-				NodeList coresChildren = coresNode.getChildNodes();
-				for (int i=0; i<coresChildren.getLength(); i++) {
-					Node coreNode = coresChildren.item(i);
-					if (coreNode.getNodeType() == 1) {
-						Core core = new Core(Integer.parseInt(coreNode.getNodeName().split("Core")[1]));
-						NodeList coreChildren = coreNode.getChildNodes();
-						for (int j=0; j<coreChildren.getLength(); j++) {
-							Node runnableNode = coreChildren.item(j);
-							if (runnableNode.getNodeType() == 1) {
-								Runnable runnable = new Runnable(runnableNode.getTextContent());
-								core.addRunnable(runnable);	
-							}
-						}
-						m.Cores.add(core);	
-					}
-				}
-			}
-			
-			if (osApplicationsNode != null) {
-				NodeList osApplicationsChildren = osApplicationsNode.getChildNodes();
-				for (int i=0; i<osApplicationsChildren.getLength(); i++) {
-					Node osApplicationNode = osApplicationsChildren.item(i);
-					if (osApplicationNode.getNodeType() == 1) {
-						OsApplication osApplication = new OsApplication(((Element) osApplicationNode).getAttribute("xmlns"));
-						NodeList osApplicationChildren = osApplicationNode.getChildNodes();
-						for (int j=0; j<osApplicationChildren.getLength(); j++) {
-							Node osTasksNode = osApplicationChildren.item(j);
-							if (osTasksNode.getNodeType() == 1) {
-								NodeList osTasksChildren = osTasksNode.getChildNodes();
-								for (int k=0; k<osTasksChildren.getLength(); k++) {
-									Node osTaskNode = osTasksChildren.item(k);
-									if (osTaskNode.getNodeType() == 1) {
-										NodeList osTaskChildren = osTaskNode.getChildNodes();
-										for (int l=0; l<osTaskChildren.getLength(); l++) {
-											Node runnableNode = osTaskChildren.item(l);
-											if (runnableNode.getNodeType() == 1) {
-												Runnable runnable = new Runnable(runnableNode.getTextContent());
-												OsTask osTask = new OsTask(runnable);
-												osApplication.addOsTask(osTask);
-											}
-										}
-									}
-								}
-							}
-						}
-						m.addOsApplication(osApplication);
-					}
-				}
-			}
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		return m;
-	}
 	
-	public static void printLog(Architecture arc) {
+	public static void printLog(Architecture arc, String architecturePath) {
 		try {
 
-			String _logPath = "io/output/log";
+			int root_architecture_name_levels = architecturePath.split("/").length;
+			String root_architecture_name_full = architecturePath.split("/")[root_architecture_name_levels-1];
+			String root_architecture_name = root_architecture_name_full.split("\\.")[0];
+			
+			String _logPath = "io/output/" + root_architecture_name + "/log";
 			File _logDir = new File(_logPath);
 			
 			if (_logDir.exists()) {
@@ -142,14 +39,14 @@ public class Util {
 			_logDir.mkdir();
 			
 			for (ECU e : arc.getECUs()) {
-				String _ecuPath = "io/output/log/ecu" + e.id;
+				String _ecuPath = _logPath + "/ecu" + e.id;
 				File _ecuDir = new File(_ecuPath);
 				_ecuDir.mkdir();
 				for (Core c : e.cores) {
 					Collections.sort(c.scheduler.logs);
 					String _corePath = _ecuPath + "/core" + c.id;
 					File _coreDir = new File(_corePath);
-					_coreDir.mkdir();
+					_coreDir.mkdirs();
 					File _eventsFile = new File(_corePath + "/events.html");
 					File _statsFile = new File(_corePath + "/stats.html");
 					FileWriter fw = new FileWriter(_statsFile, false);
@@ -157,10 +54,8 @@ public class Util {
 					StringBuilder builder = new StringBuilder();
 					builder.append("<html><body><u><b>General Stats</b></u><br/><br/>");
 					builder.append("<b>CPU load: </b>" + (100.0-Double.valueOf(c.scheduler.data.get("idle"))) + "%");
-//					builder.append("<br/><b>End to end delay SWC0: </b>" + c.scheduler.data.get("e2e0"));
-//					builder.append("<br/><b>End to end delay SWC1: </b>" + c.scheduler.data.get("e2e1"));
-//					builder.append("<br/><b>End to end delay SWC2: </b>" + c.scheduler.data.get("e2e2"));
-//					builder.append("<br/><b>End to end delay SWC3: </b>" + c.scheduler.data.get("e2e3"));
+
+					
 					
 					Hashtable<Integer, Double> averageE2EDelays = new Hashtable<Integer, Double>();
 					Hashtable<Integer, Double> worstE2EDelays = new Hashtable<Integer, Double>();
@@ -214,6 +109,69 @@ public class Util {
 					fw.close();		
 				}
 			}
+			
+			String _e2ePath = "io/output/" + root_architecture_name + "/e2e";
+			File _e2eDir = new File(_e2ePath);
+			
+			if (!_e2eDir.exists()) {
+				delete(_e2eDir);
+			}
+			
+			_e2eDir.mkdir();
+			
+			File _e2eFile = new File(_e2ePath + "/e2e.html");
+			FileWriter fw = new FileWriter(_e2eFile, false);
+			PrintWriter pw = new PrintWriter(fw);
+			StringBuilder builder = new StringBuilder();
+			
+			builder.append("<html><body>");
+			for (Integer k : arc.startingTimes.keySet()) {
+				double avg = 0;
+				double worstE2E = Double.MIN_VALUE;
+				int i=0;
+				int numTasks = -1;
+				
+				for (Integer pc : arc.startingTimes.get(k).keySet()) {
+					if (i==0) {
+						numTasks = arc.startingTimes.get(k).get(pc).size();
+					}
+					
+					if (arc.finishingTimes.get(k).containsKey(pc) && arc.finishingTimes.get(k).get(pc).size() == numTasks) {
+						double maxFinishTime = Double.MIN_VALUE;
+						double minStartTime = Double.MAX_VALUE;
+						
+						for (Double st : arc.startingTimes.get(k).get(pc)) {
+							if (st < minStartTime) {
+								minStartTime = st;
+							}
+						}
+						
+						for (Double ft : arc.finishingTimes.get(k).get(pc)) {
+							if (ft > maxFinishTime) {
+								maxFinishTime = ft;
+							}
+						}
+						
+						double e2e = maxFinishTime - minStartTime;
+						avg += e2e;
+						
+						if (e2e > worstE2E) {
+							worstE2E = e2e;
+						}	
+					}
+					
+					i++;
+				}
+				
+				avg = avg/(double)arc.startingTimes.get(k).size();
+				builder.append("<br/><b>End to end delay SWC" + k + " (average): </b>" + avg); 
+				builder.append("<br/><b>End to end delay SWC" + k + " (worst): </b>" + worstE2E);
+			}
+			builder.append("</body></html>");
+			
+			pw.print(builder.toString());
+			pw.close();
+			fw.close();	
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -373,7 +331,7 @@ public class Util {
 											Node osTaskNode = osTasksChildren.item(l);
 											if (osTaskNode.getNodeType() == 1) {
 												Integer _otid = Integer.valueOf(osTaskNode.getAttributes().getNamedItem("id").getNodeValue());
-												Integer _otperiod = Integer.valueOf(osTaskNode.getAttributes().getNamedItem("period").getNodeValue());
+												Double _otperiod = Double.valueOf(osTaskNode.getAttributes().getNamedItem("period").getNodeValue());
 												OsTask _osTask = new OsTask(_otid, _otperiod, c);
 												NodeList osTaskChildren = osTaskNode.getChildNodes();
 												List<Runnable> _taskRunnables = new ArrayList<Runnable>();

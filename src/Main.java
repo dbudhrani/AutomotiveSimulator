@@ -1,7 +1,7 @@
 
 public class Main {
 
-	public static boolean USE_TEMPORAL_PARTITIONING = false;
+	public static String ARCHITECTURE_PATH = "io/input/architecture3.xml";
 	
 	public Main() {
 
@@ -9,11 +9,11 @@ public class Main {
 
 	public static void main(String[] args) {
 		
-		Architecture a = Util.parseInputFile("io/input/architecture1.xml");
+		Architecture a = Util.parseInputFile(ARCHITECTURE_PATH);
 		a.execute(1000);
 		
 		
-		Util.printLog(a);
+		Util.printLog(a, ARCHITECTURE_PATH);
 		
 	}
 
